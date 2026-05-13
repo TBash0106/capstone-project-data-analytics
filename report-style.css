@@ -1,0 +1,694 @@
+/* ============================================================
+   ARGENTIL CAPSTONE REPORT — A-CLASS STYLE SHEET
+   Lagos Business School · Data Analytics Capstone · CS1
+
+   Designed for:
+   - Refined editorial typography (Source Serif + Inter)
+   - A cohesive callout system that highlights insights
+   - Card-style sections with subtle depth
+   - Sticky TOC with active-section highlighting
+   - Hover effects across tables and charts
+   ============================================================ */
+
+@import url('https://fonts.googleapis.com/css2?family=Source+Serif+4:opsz,wght@8..60,300..700&family=Inter:wght@400;500;600;700;800&family=JetBrains+Mono:wght@400;500&display=swap');
+
+/* ---------- ROOT TOKENS ---------- */
+:root {
+  --c-ink:        #1F2937;
+  --c-muted:      #4B5563;
+  --c-soft:       #6B7280;
+  --c-line:       #E5E7EB;
+  --c-line-light: #EEF0F4;
+  --c-bg:         #FAFBFC;
+  --c-card:       #FFFFFF;
+
+  --c-primary:     #2E7D8F;
+  --c-primary-dk:  #1F4E5A;
+  --c-primary-vd:  #0F3036;
+  --c-primary-soft:#EFF6F8;
+  --c-accent:      #C0504D;
+  --c-accent-soft: #FBEDED;
+  --c-gold:        #D4A24C;
+  --c-gold-soft:   #FCF6E8;
+  --c-success:     #2E7D58;
+  --c-success-soft:#E8F4ED;
+
+  --radius-sm: 4px;
+  --radius:    8px;
+  --radius-lg: 12px;
+
+  --shadow-xs: 0 1px 2px rgba(15,48,54,0.04);
+  --shadow-sm: 0 1px 3px rgba(15,48,54,0.06), 0 1px 2px rgba(15,48,54,0.04);
+  --shadow:    0 4px 12px rgba(15,48,54,0.08);
+  --shadow-lg: 0 8px 28px rgba(15,48,54,0.12);
+
+  --font-sans:  'Inter', -apple-system, BlinkMacSystemFont, "Segoe UI", Arial, sans-serif;
+  --font-serif: 'Source Serif 4', Georgia, "Times New Roman", serif;
+  --font-mono:  'JetBrains Mono', "SF Mono", Menlo, Consolas, monospace;
+}
+
+/* ---------- DOCUMENT CHROME ---------- */
+body {
+  font-family: var(--font-sans);
+  color: var(--c-ink);
+  line-height: 1.7;
+  background: var(--c-bg);
+  font-size: 16px;
+  font-feature-settings: "kern", "liga", "calt";
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+}
+
+#quarto-document-content,
+main.content,
+.quarto-container {
+  max-width: 1120px !important;
+  margin: 0 auto;
+}
+
+/* ---------- TITLE BLOCK (LBS CAPSTONE BANNER) ---------- */
+#title-block-header,
+.quarto-title-block,
+header#title-block-header.quarto-title-block.default {
+  background:
+    linear-gradient(135deg,
+      var(--c-primary-vd) 0%,
+      var(--c-primary-dk) 45%,
+      var(--c-primary) 100%) !important;
+  color: white !important;
+  padding: 2.8rem 2.8rem 2.2rem !important;
+  border-radius: var(--radius-lg) !important;
+  margin: 1.5rem 0 2.5rem !important;
+  box-shadow: 0 10px 32px rgba(15,48,54,0.18);
+  border: none !important;
+  position: relative;
+  overflow: hidden;
+}
+#title-block-header::before {
+  content: "";
+  position: absolute;
+  top: 0; right: 0; bottom: 0;
+  width: 40%;
+  background: radial-gradient(circle at 80% 30%,
+    rgba(212,162,76,0.18) 0%, transparent 60%);
+  pointer-events: none;
+}
+
+/* Course tag — small pill above the title */
+#title-block-header::after {
+  content: "LAGOS BUSINESS SCHOOL  ·  DATA ANALYTICS CAPSTONE PROJECT  ·  CS1";
+  display: block;
+  position: absolute;
+  top: 1.4rem;
+  left: 2.8rem;
+  color: var(--c-gold);
+  font-family: var(--font-sans);
+  font-weight: 700;
+  font-size: 0.7rem;
+  letter-spacing: 0.18em;
+  padding: 0.35rem 0.85rem;
+  background: rgba(212,162,76,0.12);
+  border: 1px solid rgba(212,162,76,0.35);
+  border-radius: 999px;
+  text-transform: uppercase;
+}
+
+#title-block-header h1,
+.quarto-title h1.title {
+  color: white !important;
+  border: none !important;
+  padding: 0 !important;
+  margin: 1.8rem 0 0 0 !important;
+  font-family: var(--font-serif) !important;
+  font-size: 2.3rem !important;
+  font-weight: 600 !important;
+  letter-spacing: -0.015em !important;
+  line-height: 1.2 !important;
+  position: relative;
+  z-index: 1;
+}
+
+#title-block-header .subtitle,
+.quarto-title .subtitle {
+  color: rgba(255,255,255,0.88) !important;
+  font-family: var(--font-serif) !important;
+  font-size: 1.15rem !important;
+  font-weight: 300 !important;
+  font-style: italic !important;
+  margin-top: 0.6rem !important;
+  display: block !important;
+  position: relative;
+  z-index: 1;
+  letter-spacing: 0.005em;
+}
+
+#title-block-header .quarto-title-meta {
+  margin-top: 1.4rem !important;
+  border-top: 1px solid rgba(255,255,255,0.18);
+  padding-top: 1rem !important;
+  display: grid !important;
+  grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+  gap: 1.2rem !important;
+  position: relative;
+  z-index: 1;
+}
+#title-block-header .quarto-title-meta-heading {
+  color: var(--c-gold) !important;
+  font-weight: 700 !important;
+  text-transform: uppercase !important;
+  letter-spacing: 0.1em !important;
+  font-size: 0.65rem !important;
+  margin-bottom: 0.25rem !important;
+  font-family: var(--font-sans) !important;
+}
+#title-block-header .quarto-title-meta-contents,
+#title-block-header .quarto-title-authors,
+#title-block-header .quarto-title-meta-author {
+  color: rgba(255,255,255,0.92) !important;
+  font-size: 0.92rem !important;
+  font-weight: 500 !important;
+}
+
+/* ---------- HEADINGS HIERARCHY ---------- */
+h1, h2, h3, h4, h5 {
+  font-family: var(--font-serif);
+  color: var(--c-primary-vd);
+  font-weight: 600;
+  letter-spacing: -0.01em;
+}
+
+h2 {
+  font-size: 1.7rem;
+  margin-top: 3.5rem;
+  margin-bottom: 1.4rem;
+  padding-bottom: 0.6rem;
+  border-bottom: 2px solid var(--c-line);
+  position: relative;
+}
+h2::before {
+  content: "";
+  position: absolute;
+  left: 0;
+  bottom: -2px;
+  width: 60px;
+  height: 2px;
+  background: var(--c-accent);
+}
+
+h3 {
+  font-size: 1.32rem;
+  margin-top: 2.2rem;
+  color: var(--c-primary);
+  font-weight: 600;
+}
+
+h4 {
+  font-size: 1.08rem;
+  color: var(--c-primary-dk);
+  font-weight: 600;
+  text-transform: none;
+  margin-top: 1.6rem;
+}
+
+/* Section numbers — quiet, refined */
+.header-section-number {
+  color: var(--c-soft);
+  font-weight: 400;
+  font-feature-settings: "tnum";
+  margin-right: 0.55rem;
+}
+
+p {
+  margin-bottom: 1.05rem;
+  hyphens: auto;
+}
+p:has(+ ul), p:has(+ ol) { margin-bottom: 0.6rem; }
+
+/* ---------- INLINE ELEMENTS ---------- */
+strong { color: var(--c-primary-vd); font-weight: 600; }
+em { color: var(--c-primary-dk); }
+
+code {
+  font-family: var(--font-mono);
+  background: var(--c-primary-soft);
+  padding: 0.12rem 0.42rem;
+  border-radius: var(--radius-sm);
+  font-size: 0.86em;
+  color: var(--c-primary-dk);
+  font-weight: 500;
+  border: 1px solid rgba(46,125,143,0.15);
+}
+
+a {
+  color: var(--c-primary);
+  text-decoration: none;
+  border-bottom: 1px solid transparent;
+  transition: all 0.15s ease;
+}
+a:hover {
+  color: var(--c-accent);
+  border-bottom-color: var(--c-accent);
+}
+
+/* ---------- TABLES ---------- */
+table {
+  border-collapse: collapse !important;
+  border-spacing: 0 !important;
+  margin: 1.6rem 0 !important;
+  width: 100% !important;
+  font-size: 0.92rem !important;
+  background: white !important;
+  border: 1px solid var(--c-line) !important;
+  border-radius: var(--radius) !important;
+  overflow: hidden !important;
+  box-shadow: var(--shadow-sm) !important;
+  font-variant-numeric: tabular-nums;
+}
+
+table thead tr {
+  background: linear-gradient(to bottom, #F4F6F9, #EAEDF1) !important;
+}
+table thead th {
+  color: var(--c-primary-vd) !important;
+  font-family: var(--font-sans) !important;
+  font-weight: 700 !important;
+  font-size: 0.86rem !important;
+  text-align: left !important;
+  padding: 0.95rem 1.15rem !important;
+  border-bottom: 2px solid var(--c-primary-dk) !important;
+  vertical-align: bottom !important;
+  letter-spacing: 0.02em;
+  text-transform: uppercase;
+}
+table tbody td, table tbody th {
+  padding: 0.72rem 1.15rem !important;
+  border-bottom: 1px solid var(--c-line-light) !important;
+  vertical-align: middle !important;
+  color: var(--c-ink) !important;
+}
+table tbody tr:nth-child(even) td { background-color: #FCFCFD !important; }
+table tbody tr:hover td {
+  background-color: var(--c-primary-soft) !important;
+  transition: background-color 0.18s ease;
+}
+table tbody tr:last-child td { border-bottom: none !important; }
+
+table tbody th {
+  font-weight: 600 !important;
+  color: var(--c-primary-vd) !important;
+  background: transparent !important;
+  padding-right: 1.3rem !important;
+  text-align: left !important;
+  width: 1%;
+  white-space: nowrap;
+  font-family: var(--font-sans) !important;
+  font-size: 0.86rem !important;
+}
+
+table td[align="right"], table th[align="right"] { text-align: right !important; }
+table td[align="center"], table th[align="center"] { text-align: center !important; }
+
+table caption,
+.tbl-caption,
+caption {
+  caption-side: top !important;
+  text-align: left !important;
+  font-family: var(--font-sans) !important;
+  font-size: 0.84rem !important;
+  font-weight: 600 !important;
+  color: var(--c-soft) !important;
+  letter-spacing: 0.04em !important;
+  text-transform: uppercase !important;
+  padding: 0 0 0.5rem 0 !important;
+}
+
+@media (max-width: 800px) {
+  table { display: block; overflow-x: auto; -webkit-overflow-scrolling: touch; }
+}
+
+/* ============================================================
+   THEORY-RECAP CALLOUTS (custom div :::theory-recap)
+   ============================================================ */
+.theory-recap {
+  background: linear-gradient(135deg,
+              var(--c-primary-soft) 0%,
+              #F4F9FB 50%, white 100%);
+  border-left: 4px solid var(--c-primary);
+  padding: 1.1rem 1.5rem;
+  margin: 1.5rem 0;
+  border-radius: 0 var(--radius) var(--radius) 0;
+  box-shadow: var(--shadow-xs);
+  position: relative;
+}
+.theory-recap::before {
+  content: "📘";
+  position: absolute;
+  top: 0.85rem; right: 1.1rem;
+  font-size: 1.1rem;
+  opacity: 0.4;
+}
+.theory-recap p { margin-bottom: 0.6rem; font-size: 0.96rem; }
+.theory-recap p:last-child { margin-bottom: 0; }
+.theory-recap strong { color: var(--c-primary-vd); }
+.theory-recap em { color: var(--c-primary-dk); font-style: italic; }
+
+/* ============================================================
+   QUARTO NATIVE CALLOUTS — REFINED VISUAL TREATMENT
+   .callout-important = headline findings (red)
+   .callout-tip       = business implications (green)
+   .callout-note      = methodological notes (blue)
+   .callout-warning   = limitations & cautions (gold)
+   ============================================================ */
+div.callout {
+  margin: 1.6rem 0 !important;
+  border: 1px solid var(--c-line) !important;
+  border-radius: var(--radius) !important;
+  box-shadow: var(--shadow-sm) !important;
+  overflow: hidden !important;
+  background: white !important;
+}
+div.callout-header {
+  padding: 0.7rem 1.1rem !important;
+  font-family: var(--font-sans) !important;
+  font-weight: 700 !important;
+  font-size: 0.82rem !important;
+  letter-spacing: 0.06em !important;
+  text-transform: uppercase !important;
+  border-bottom: 1px solid var(--c-line-light) !important;
+  display: flex;
+  align-items: center;
+  gap: 0.55rem;
+}
+div.callout-body {
+  padding: 1rem 1.2rem 1.1rem !important;
+  font-size: 0.96rem !important;
+  line-height: 1.65 !important;
+}
+div.callout-body p:last-child { margin-bottom: 0; }
+div.callout-body strong { color: inherit; }
+
+/* IMPORTANT — Headline findings */
+div.callout-important {
+  border-left: 4px solid var(--c-accent) !important;
+}
+div.callout-important div.callout-header {
+  background: var(--c-accent-soft) !important;
+  color: var(--c-accent) !important;
+}
+div.callout-important .callout-icon::before { content: "🎯" !important; }
+
+/* TIP — Business implications */
+div.callout-tip {
+  border-left: 4px solid var(--c-success) !important;
+}
+div.callout-tip div.callout-header {
+  background: var(--c-success-soft) !important;
+  color: var(--c-success) !important;
+}
+div.callout-tip .callout-icon::before { content: "💡" !important; }
+
+/* NOTE — Methodological */
+div.callout-note {
+  border-left: 4px solid var(--c-primary) !important;
+}
+div.callout-note div.callout-header {
+  background: var(--c-primary-soft) !important;
+  color: var(--c-primary-dk) !important;
+}
+div.callout-note .callout-icon::before { content: "📐" !important; }
+
+/* WARNING — Caveats */
+div.callout-warning {
+  border-left: 4px solid var(--c-gold) !important;
+}
+div.callout-warning div.callout-header {
+  background: var(--c-gold-soft) !important;
+  color: #8B6914 !important;
+}
+div.callout-warning .callout-icon::before { content: "⚠️" !important; }
+
+/* ============================================================
+   KEY-FINDINGS CARD GRID (for Executive Summary)
+   ============================================================ */
+.key-findings {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+  gap: 1rem;
+  margin: 1.5rem 0 2rem;
+}
+.kf-card {
+  background: white;
+  border: 1px solid var(--c-line);
+  border-top: 3px solid var(--c-primary);
+  border-radius: var(--radius);
+  padding: 1.1rem 1.2rem;
+  box-shadow: var(--shadow-xs);
+  transition: all 0.2s ease;
+}
+.kf-card:hover {
+  transform: translateY(-2px);
+  box-shadow: var(--shadow);
+  border-top-color: var(--c-accent);
+}
+.kf-card .kf-label {
+  font-size: 0.7rem;
+  font-weight: 700;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  color: var(--c-soft);
+  margin-bottom: 0.4rem;
+}
+.kf-card .kf-value {
+  font-family: var(--font-serif);
+  font-size: 1.6rem;
+  font-weight: 700;
+  color: var(--c-primary-vd);
+  line-height: 1.1;
+  margin-bottom: 0.25rem;
+  font-feature-settings: "tnum";
+}
+.kf-card .kf-detail {
+  font-size: 0.85rem;
+  color: var(--c-muted);
+  line-height: 1.4;
+}
+
+/* ---------- CHART FRAMES ---------- */
+.cell-output-display:has(.plotly),
+.cell-output-display:has(.js-plotly-plot),
+figure.figure {
+  background: white;
+  border: 1px solid var(--c-line);
+  border-radius: var(--radius-lg);
+  padding: 1.2rem;
+  margin: 1.6rem 0;
+  box-shadow: var(--shadow-sm);
+  transition: all 0.25s ease;
+}
+.cell-output-display:has(.plotly):hover,
+.cell-output-display:has(.js-plotly-plot):hover,
+figure.figure:hover {
+  box-shadow: var(--shadow-lg);
+  border-color: rgba(46,125,143,0.3);
+}
+
+figure.figure figcaption,
+.figure-caption,
+.quarto-figure-caption {
+  color: var(--c-soft) !important;
+  font-size: 0.86rem !important;
+  font-style: italic !important;
+  margin-top: 0.9rem !important;
+  padding: 0.5rem 0 0 0.85rem !important;
+  border-left: 3px solid var(--c-primary) !important;
+  text-align: left !important;
+  line-height: 1.55;
+}
+
+/* ---------- INTERACTIVE BADGE ---------- */
+.interactive-hint {
+  display: inline-block;
+  background: var(--c-primary-soft);
+  color: var(--c-primary-dk);
+  font-family: var(--font-sans);
+  font-size: 0.66rem;
+  padding: 0.18rem 0.65rem;
+  border-radius: 999px;
+  font-weight: 700;
+  margin-left: 0.4rem;
+  vertical-align: middle;
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+  border: 1px solid rgba(46,125,143,0.2);
+}
+
+/* ---------- STAT BLOCKS ---------- */
+.stat-block {
+  display: inline-block;
+  background: white;
+  border: 1px solid var(--c-line);
+  border-radius: var(--radius-sm);
+  padding: 0.55rem 0.95rem;
+  margin: 0.3rem 0.4rem 0.3rem 0;
+  font-family: var(--font-sans);
+  font-size: 0.88rem;
+  box-shadow: var(--shadow-xs);
+}
+.stat-block strong {
+  color: var(--c-primary);
+  font-weight: 700;
+  font-feature-settings: "tnum";
+}
+
+/* ---------- TOC (SIDEBAR NAV) ---------- */
+#TOC, .sidebar-navigation, nav#TOC {
+  font-family: var(--font-sans);
+  font-size: 0.88rem;
+}
+#TOC > ul, .sidebar nav ul, nav#TOC ul {
+  list-style: none;
+  padding-left: 0;
+}
+#TOC a, .sidebar a {
+  color: var(--c-muted);
+  border-left: 2px solid transparent;
+  padding: 0.3rem 0 0.3rem 0.7rem;
+  display: block;
+  margin: 0.05rem 0;
+  transition: all 0.15s ease;
+  line-height: 1.45;
+  border-bottom: none;
+}
+#TOC a:hover, .sidebar a:hover {
+  color: var(--c-primary);
+  border-left-color: var(--c-primary);
+  background: var(--c-primary-soft);
+  text-decoration: none;
+}
+#TOC a.active, .sidebar a.active {
+  color: var(--c-primary-vd) !important;
+  border-left-color: var(--c-accent) !important;
+  font-weight: 600;
+  background: var(--c-primary-soft);
+}
+
+/* ---------- CODE BLOCKS ---------- */
+div.sourceCode {
+  border-radius: var(--radius) !important;
+  border: 1px solid var(--c-line) !important;
+  background: #FBFCFD !important;
+  box-shadow: var(--shadow-xs);
+  margin: 1.2rem 0;
+}
+pre {
+  background: #FBFCFD !important;
+  border: none !important;
+  padding: 1.1rem 1.2rem !important;
+  font-family: var(--font-mono) !important;
+  font-size: 0.82rem !important;
+  line-height: 1.6 !important;
+}
+.cell-output pre {
+  background: #FFFBF0 !important;
+  border-left: 3px solid var(--c-gold) !important;
+  border-radius: 0 var(--radius) var(--radius) 0 !important;
+  font-size: 0.82rem !important;
+  color: #5C4A1E !important;
+}
+
+/* ---------- BLOCKQUOTES ---------- */
+blockquote {
+  border-left: 4px solid var(--c-gold);
+  background: var(--c-gold-soft);
+  padding: 1rem 1.3rem;
+  margin: 1.3rem 0;
+  border-radius: 0 var(--radius) var(--radius) 0;
+  color: var(--c-muted);
+  font-style: italic;
+  font-family: var(--font-serif);
+}
+
+/* ---------- LISTS ---------- */
+ul, ol {
+  padding-left: 1.4rem;
+}
+ul li, ol li {
+  margin-bottom: 0.5rem;
+  padding-left: 0.2rem;
+}
+ul li::marker { color: var(--c-primary); }
+ol li::marker { color: var(--c-primary); font-weight: 700; }
+
+/* ---------- HORIZONTAL RULES ---------- */
+hr {
+  border: none;
+  height: 1px;
+  background: linear-gradient(to right, transparent, var(--c-line), transparent);
+  margin: 3rem 0;
+}
+
+/* ---------- DEFINITION LISTS ---------- */
+dl dt {
+  font-weight: 700;
+  color: var(--c-primary-vd);
+  margin-top: 0.8rem;
+}
+dl dd {
+  margin-left: 1.5rem;
+  margin-bottom: 0.8rem;
+  color: var(--c-muted);
+}
+
+/* ---------- DOCUMENT-END SEAL ---------- */
+.doc-seal {
+  margin: 3.5rem auto 1.5rem;
+  padding: 1.4rem 2rem;
+  text-align: center;
+  font-family: var(--font-sans);
+  font-size: 0.8rem;
+  color: var(--c-soft);
+  border-top: 1px solid var(--c-line);
+  letter-spacing: 0.04em;
+}
+.doc-seal strong {
+  color: var(--c-primary-dk);
+  font-weight: 700;
+  letter-spacing: 0.1em;
+  display: block;
+  margin-bottom: 0.3rem;
+  font-size: 0.7rem;
+  text-transform: uppercase;
+}
+
+/* ---------- MOBILE RESPONSIVE ---------- */
+@media (max-width: 700px) {
+  body { font-size: 15px; }
+  #title-block-header {
+    padding: 1.8rem 1.4rem 1.4rem !important;
+  }
+  #title-block-header::after {
+    left: 1.4rem;
+    font-size: 0.6rem;
+  }
+  #title-block-header h1 { font-size: 1.5rem !important; }
+  #title-block-header .subtitle { font-size: 0.95rem !important; }
+  h2 { font-size: 1.35rem; }
+  h3 { font-size: 1.15rem; }
+  .key-findings { grid-template-columns: 1fr; }
+}
+
+/* ---------- PRINT POLISH ---------- */
+@media print {
+  body { background: white; }
+  #title-block-header,
+  .cell-output-display,
+  figure.figure,
+  div.callout,
+  .theory-recap,
+  .kf-card,
+  table {
+    box-shadow: none !important;
+    page-break-inside: avoid;
+  }
+  .interactive-hint { display: none; }
+}

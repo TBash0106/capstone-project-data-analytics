@@ -1,0 +1,1065 @@
+---
+title: "Drivers of Employee Performance at Argentil Capital Limited (ACL)"
+subtitle: "A longitudinal analysis of individual, organisational, and developmental factors across six biannual review periods (2023–2025)"
+author:
+  - name: "Tolu Bashorun"
+    affiliations:
+      - name: "Argentil Capital Limited · Associate Vice President, People & Culture"
+date: today
+format:
+  html:
+    toc: true
+    toc-depth: 3
+    toc-location: left
+    toc-title: "Contents"
+    number-sections: true
+    code-fold: true
+    code-tools: true
+    code-summary: "Show code"
+    theme: cosmo
+    fig-width: 9
+    fig-height: 5
+    fig-responsive: true
+    embed-resources: true
+    css: report-style.css
+    smooth-scroll: true
+    link-external-newwindow: true
+execute:
+  echo: true
+  warning: false
+  message: false
+bibliography: references.bib
+---
+
+```{r}
+#| label: setup
+#| include: false
+
+suppressPackageStartupMessages({
+  library(tidyverse)   # dplyr, ggplot2, tidyr, readr, etc.
+  library(scales)
+  library(broom)
+  library(knitr)
+  library(fixest)
+  library(plotly)      # interactive charts via ggplotly()
+  library(htmltools)
+})
+
+set.seed(2026)
+
+# Visual palette
+PAL <- list(
+  primary  = "#2E7D8F", accent   = "#C0504D", gold     = "#D4A24C",
+  CS       = "#2E7D8F", IB       = "#1F4E5A",
+  PIPE     = "#D4A24C", Finance  = "#C0504D",
+  low      = "#9CA3AF", high     = "#2E7D8F",
+  promo_no = "#9CA3AF", promo_yes= "#C0504D"
+)
+
+# Custom ggplot theme — clean, presentation-grade
+theme_argentil <- function() {
+  theme_minimal(base_size = 11) +
+    theme(
+      plot.title       = element_text(face = "bold", color = "#1F2937", size = 13),
+      plot.subtitle    = element_text(color = "#6B7280", size = 10),
+      axis.title       = element_text(color = "#1F2937"),
+      axis.text        = element_text(color = "#4B5563"),
+      panel.grid.major = element_line(color = "#E5E7EB"),
+      panel.grid.minor = element_blank(),
+      panel.background = element_rect(fill = "white", color = NA),
+      plot.background  = element_rect(fill = "white", color = NA),
+      legend.title     = element_text(face = "bold", size = 10),
+      legend.background= element_rect(fill = "white", color = NA),
+      strip.text       = element_text(face = "bold", color = "#1F2937")
+    )
+}
+theme_set(theme_argentil())
+
+# Helper to wrap a ggplot in ggplotly with consistent layout/config
+make_interactive <- function(p, tooltip = "all", height = NULL) {
+  pl <- plotly::ggplotly(p, tooltip = tooltip)
+  pl <- plotly::config(
+    pl,
+    displayModeBar = "hover",
+    modeBarButtonsToRemove = c("lasso2d","select2d","autoScale2d",
+                               "hoverClosestCartesian","hoverCompareCartesian"),
+    toImageButtonOptions = list(format = "png", scale = 2)
+  )
+  pl <- plotly::layout(
+    pl,
+    paper_bgcolor = "white",
+    plot_bgcolor  = "white",
+    font          = list(family = "-apple-system, Segoe UI, sans-serif",
+                         size = 12, color = "#1F2937"),
+    margin        = list(l = 70, r = 30, t = 60, b = 60),
+    hoverlabel    = list(bgcolor = "white", bordercolor = "#2E7D8F",
+                         font = list(family = "-apple-system, Segoe UI, sans-serif",
+                                     size = 12, color = "#1F2937"))
+  )
+  if (!is.null(height)) pl <- plotly::layout(pl, height = height)
+  pl
+}
+
+# Load + prepare data
+df <- read_csv("employee_data.csv", show_col_types = FALSE) |>
+  mutate(
+    period_idx    = (year - 2023) * 2 + ifelse(period == "H1", 1, 2),
+    period_label  = factor(
+      paste(year, period),
+      levels = c("2023 H1","2023 H2","2024 H1","2024 H2","2025 H1","2025 H2")
+    ),
+    training_label = factor(
+      ifelse(training_participation_intensity == 2, "High (2)", "Low (1)"),
+      levels = c("Low (1)", "High (2)")
+    ),
+    promo_label = factor(
+      ifelse(promotion_status == 1, "Promoted", "Not promoted"),
+      levels = c("Not promoted", "Promoted")
+    )
+  )
+```
+
+# Executive Summary
+
+```{=html}
+<div class="key-findings">
+  <div class="kf-card">
+    <div class="kf-label">Strongest Driver</div>
+    <div class="kf-value">r = +0.55</div>
+    <div class="kf-detail">Prior performance is the dominant single predictor of current performance (p &lt; 0.001)</div>
+  </div>
+  <div class="kf-card">
+    <div class="kf-label">Tenure Effect</div>
+    <div class="kf-value">+0.32 pts/yr</div>
+    <div class="kf-detail">Performance points gained per additional year of tenure (adjusted, p = 0.045)</div>
+  </div>
+  <div class="kf-card">
+    <div class="kf-label">Manager Dispersion</div>
+    <div class="kf-value">79.8 – 93.5</div>
+    <div class="kf-detail">Range of team-mean performance across 12 managers (ANOVA p &lt; 0.001)</div>
+  </div>
+  <div class="kf-card">
+    <div class="kf-label">Model Fit</div>
+    <div class="kf-value">37%</div>
+    <div class="kf-detail">Variance in performance explained by the reduced regression model (adj-R² = 0.347)</div>
+  </div>
+</div>
+```
+
+Employee performance sits at the centre of ACL's competitive position. Across our investment banking, principal investing, and asset management lines, a lean and specialised workforce means that every individual outcome compounds making it essential to know which factors actually move the performance dial and which do not.
+
+This study uses a longitudinal panel of **31 employees observed across six half-yearly review periods (2023 H1 – 2025 H2; 153 person-period records)**, drawn from the Human Performance Committee (HPC) Power BI report and supplemented by HRIS records. Five complementary techniques — Exploratory Data Analysis, Visualisation, Hypothesis Testing, Correlation Analysis, and Ordinary Least Squares Regression — are applied in sequence, supplemented by a manager-level variance analysis and an employee fixed-effects robustness check.
+
+The central analytical question guiding this study is:
+
+**What are the key drivers of employee performance, and how do individual, organisational, and developmental factors influence performance outcomes over time?**
+
+Four findings dominate. **Prior performance is the single strongest driver** of current scores (r = +0.55, p \< 0.001), confirming substantial within-employee consistency. **Tenure is positively associated with performance** (r = +0.38, p \< 0.001) and holds in the multivariable regression (β = +0.32 per year, p = 0.045). **Department matters at the aggregate level** (ANOVA F = 8.16, p \< 0.001): CS records the highest mean (88.8) and Finance the lowest (79.8). **Manager-level variation is substantial and significant** (ANOVA F = 4.94, p \< 0.001) — between-team differences are not just statistical noise. Training participation intensity and within-period promotion status show **no positive independent association** with performance; promotion, in fact, shows a *negative* bivariate association (t = –2.35, p = 0.025), consistent with a learning-curve effect in new roles. The reduced regression model explains 37% of variance (adj-R² = 0.347).
+
+::: callout-important
+## Headline Recommendation
+
+The findings point in a single direction: **invest in continuity, calibrate the rater system, and audit developmental spend.**
+
+1.  Prioritise **early-tenure retention and onboarding** — tenure has a measurable, defensible effect.
+2.  Run a **manager calibration exercise** alongside a focused review of the **Finance-team performance gap** — these two findings are entangled and worth investigating together.
+3.  **Audit the developmental levers** (training and within-period promotion) before defending or cutting their budgets — neither shows the lift the policy narrative assumes.
+:::
+
+# Professional Disclosure
+
+Tolu Bashorun is the **Associate Vice President, People & Culture at Argentil Capital Limited**, with responsibility for human resources practice across the Group's Nigerian operations spanning investment banking, principal investing, and asset management. The remit covers performance management, learning and development, talent management, compensation and benefits, and employee relations and engagement — meaning people data is a live operational input into decisions made regularly across the employee lifecycle.
+
+::: theory-recap
+**Exploratory Data Analysis (EDA)** sets the foundation. In a corporate HR setting, performance data is rarely clean or self-explanatory. As custodian of the Group's people records, the first responsibility is to understand the data before drawing conclusions: examining distributions, identifying anomalies, and surfacing structural gaps. In this study EDA confirmed that 17 first-observation rows had no `prior_performance` (employees in probation, structurally rather than randomly missing) and that the five departments are unevenly represented — facts that shape every later interpretation.
+:::
+
+::: theory-recap
+**Data Visualisation** is the bridge between numerical results and executive understanding. Communicating findings to the Human Performance Committee is part of the AVP role, and charts that prioritise clarity over technical detail are the way that happens. The visualisations in this report are designed to make each result legible to a non-technical reader in seconds.
+:::
+
+::: theory-recap
+**Hypothesis Testing** brings discipline to claims that would otherwise rest on intuition. In a firm of this size where teams are lean and decisions deliberate, statements such as *"the training programme is working"* or *"Investment Banking outperforms"* need a formal evidence base. Welch's *t*-tests and one-way ANOVA provide that base here.
+:::
+
+::: theory-recap
+**Correlation Analysis** is the standard first quantitative pass — a fast, assumption-light way to triage which variables earn a place in the regression model. For development and succession planning at Argentil, knowing which factors actually move alongside performance prevents resources from being spent on interventions that are not connected to outcomes.
+:::
+
+::: theory-recap
+**Ordinary Least Squares Regression** completes the chain by isolating the partial effect of each driver while holding the others constant. It is the technique that converts correlation into a defensible statement about which lever does what — exactly the question that strategic people decisions at ACL hinge on.
+:::
+
+# Data Collection & Sampling
+
+**Primary source.** The Power BI performance appraisal report prepared each cycle for the Human Performance Committee (HPC). This is the authoritative record of the bi-annual review and the source of the performance, prior performance, and performance change variables.
+
+**Supplementary source.** The Human Resources Information System (HRIS) and general HR records, which supplied the time and role variables (hire year, tenure, years-in-role, job level, department), the manager identifier, the promotion status, and the training participation intensity. Both sources were accessed in the ordinary course of professional duties as data custodian.
+
+**Time period covered.** Six review periods: 2023 H1, 2023 H2, 2024 H1, 2024 H2, 2025 H1, and 2025 H2. The biannual review cycle is the standard cadence at Argentil.
+
+**Sampling approach.** A census — every employee with complete records in any of the six periods is included; no random sampling is applied. The file is a population snapshot of the relevant workforce, not a sample from it.
+
+**Sample size.** 31 unique employees, 153 person-period observations. Most employees (19 of 31) appear in all six periods; the remainder are joiners or leavers within the window. Observations per employee range from 1 to 6 with median 6.
+
+**Unit of observation.** Employee-period pair — the design that allows performance to be examined across both employees and time.
+
+**Ethical considerations.** All employee and manager identifiers were anonymised before analysis (e.g., `EMP001`). No personal identifiable information is included in the dataset or outputs, and the data is used solely for the academic purposes of this submission, consistent with the data governance responsibilities of the role.
+
+# Data Description
+
+The dataset comprises 153 observations across 15 variables, covering six biannual review periods between 2023 and 2025.
+
+```{r}
+#| label: tbl-overview
+#| tbl-cap: "Variable inventory — types, completeness, and cardinality"
+
+tibble(
+  Variable   = names(df),
+  Type       = sapply(df, function(x) class(x)[1]),
+  `Non-null` = sapply(df, function(x) sum(!is.na(x))),
+  Missing    = sapply(df, function(x) sum(is.na(x))),
+  Unique     = sapply(df, function(x) length(unique(x)))
+) |>
+  kable()
+```
+
+The variables fall into four conceptual blocks. **Identifiers and time** — `S/N`, `employee_id`, `manager_id`, `hire_year`, `year`, `period`. **Individual factors** — `tenure_years`, `years_in_role`, `prior_performance`. **Organisational factors** — `department` (CS, IB, PIPE, Finance, and People & Culture), `level`. **Developmental factors** — `promotion_status` (binary) and `training_participation_intensity`. **Outcomes** — `performance_score` (range 56–100) and `performance_change`.
+
+```{r}
+#| label: tbl-numeric-summary
+#| tbl-cap: "Summary statistics — numeric variables"
+
+df |>
+  select(tenure_years, years_in_role, prior_performance,
+         performance_score, performance_change) |>
+  summary() |>
+  kable()
+```
+
+```{r}
+#| label: fig-distribution
+#| fig-cap: "Distribution of performance score and Q-Q plot against the normal distribution. Scores are approximately bell-shaped around a mean of 86.6 with a mild left tail; acceptable for parametric inference at n = 153. **Hover over bars and points for details.**"
+#| fig-width: 11
+#| fig-height: 4.4
+
+mean_v   <- mean(df$performance_score, na.rm = TRUE)
+
+# Histogram with hover tooltip
+hist_data <- df |>
+  mutate(bin = cut(performance_score, breaks = 20)) |>
+  count(bin, name = "Count") |>
+  mutate(
+    bin_mid = sapply(strsplit(gsub("\\(|\\]|\\[", "", as.character(bin)), ","),
+                     function(x) mean(as.numeric(x))),
+    bin_lbl = as.character(bin)
+  )
+
+p_hist <- ggplot(hist_data, aes(x = bin_mid, y = Count,
+                                 text = paste0("Score range: ", bin_lbl,
+                                               "<br>Count: ", Count))) +
+  geom_col(fill = PAL$primary, color = "white", alpha = 0.88, width = 2) +
+  geom_vline(xintercept = mean_v, color = PAL$accent,
+             linetype = "dashed", linewidth = 0.9) +
+  labs(title = "Distribution of Performance Score",
+       x = "Performance Score", y = "Frequency")
+
+# Q-Q plot
+qq_data <- tibble(sample = sort(df$performance_score[!is.na(df$performance_score)])) |>
+  mutate(theoretical = qnorm(ppoints(n())))
+
+p_qq <- ggplot(qq_data, aes(x = theoretical, y = sample,
+                             text = paste0("Theoretical: ", round(theoretical, 2),
+                                           "<br>Sample: ", round(sample, 2)))) +
+  geom_point(color = PAL$primary, alpha = 0.7, size = 1.8) +
+  geom_abline(slope = sd(qq_data$sample), intercept = mean(qq_data$sample),
+              color = PAL$accent, linewidth = 0.9) +
+  labs(title = "Q-Q Plot vs. Normal",
+       x = "Theoretical Quantiles", y = "Sample Quantiles")
+
+plotly::subplot(
+  make_interactive(p_hist, tooltip = "text"),
+  make_interactive(p_qq,   tooltip = "text"),
+  nrows = 1, margin = 0.06, titleX = TRUE, titleY = TRUE
+)
+```
+
+Performance scores are concentrated in a high band — mean ≈ 86.6, SD ≈ 6.3 — consistent with Argentil's strong performance culture but limiting the variability available for statistical inference. Seventeen missing values appear on `prior_performance` and `performance_change`; these correspond to first-observation rows for new joiners still in their probation phase and are therefore retained for descriptive analysis but excluded only where prior performance is required as a predictor.
+
+# Exploratory Data Analysis {#sec-eda}
+
+> *Technique 1 of 5 · Establishing the structural foundation*
+
+::: theory-recap
+**Theory recap.** EDA, elaborated for business analytics applications by @adi2026, is the systematic look at the data before any model is fitted: distributional shape, outliers, missingness pattern, and bivariate associations. It is the diagnostic stage that protects every subsequent inferential claim.
+
+**Business justification.** Before recommending changes to the training budget, promotion criteria, or developmental programmes at the Group, the analyst has to be sure the data can support those claims. EDA reveals the unbalanced department sizes, the structural missingness for probation-period rows, and the level-band imbalance — facts that change how every later result must be qualified.
+:::
+
+```{r}
+#| label: tbl-categorical
+#| tbl-cap: "Distribution of categorical variables"
+
+cat_summary <- bind_rows(lapply(
+  c("department","level","period","promotion_status","training_participation_intensity"),
+  function(col) {
+    df |>
+      count(.data[[col]], name = "n") |>
+      arrange(desc(n)) |>
+      transmute(
+        Variable = col,
+        Value    = as.character(.data[[col]]),
+        n        = n,
+        Pct      = sprintf("%.1f%%", 100 * n / nrow(df))
+      )
+  }
+))
+kable(cat_summary)
+```
+
+```{r}
+#| label: fig-department
+#| fig-cap: "Performance score by department, ordered by mean. CS shows the highest median; Finance sits markedly below the other three. **Hover any box for distribution stats; toggle departments by clicking the legend.**"
+#| fig-width: 9
+#| fig-height: 5
+
+dep_means <- df |>
+  group_by(department) |>
+  summarise(mean_score = mean(performance_score, na.rm = TRUE),
+            n = n(), .groups = "drop") |>
+  arrange(mean_score)
+
+dep_order <- dep_means$department
+dep_cols  <- c(CS = PAL$CS, IB = PAL$IB, PIPE = PAL$PIPE, Finance = PAL$Finance)
+
+p_dep <- ggplot(df, aes(x = factor(department, levels = dep_order),
+                         y = performance_score,
+                         fill = department,
+                         text = paste0("<b>", department, "</b>",
+                                       "<br>Score: ", round(performance_score, 2),
+                                       "<br>Tenure: ", tenure_years, " yrs",
+                                       "<br>Level: ", level))) +
+  geom_boxplot(width = 0.55, alpha = 0.75, outlier.shape = NA) +
+  geom_jitter(width = 0.18, alpha = 0.55, size = 1.3, color = "#404040") +
+  scale_fill_manual(values = dep_cols, guide = "none") +
+  labs(title = paste0("Performance Score by Department  ·  Overall mean ",
+                      round(mean(df$performance_score, na.rm = TRUE), 1)),
+       x = "Department (ordered low → high mean)",
+       y = "Performance Score")
+
+make_interactive(p_dep, tooltip = "text")
+```
+
+```{r}
+#| label: fig-time
+#| fig-cap: "Performance trajectory across six review periods. Grey lines trace individual employees; the red line marks the cohort mean ± 1 SE. **Hover any employee line to see their full profile; click legend items to filter.**"
+#| fig-width: 10
+#| fig-height: 5
+
+period_means <- df |>
+  group_by(period_idx, period_label) |>
+  summarise(
+    mean_score = mean(performance_score, na.rm = TRUE),
+    sd_score   = sd(performance_score,   na.rm = TRUE),
+    n          = n(),
+    .groups    = "drop"
+  ) |>
+  mutate(se = sd_score / sqrt(n),
+         ymin = mean_score - se,
+         ymax = mean_score + se)
+
+period_lbls <- c("2023 H1","2023 H2","2024 H1","2024 H2","2025 H1","2025 H2")
+
+p_time <- ggplot() +
+  geom_line(data = df,
+            aes(x = period_idx, y = performance_score, group = employee_id,
+                text = paste0("<b>", employee_id, "</b>",
+                              "<br>", department, " · ", level,
+                              "<br>", period_label, ": ", round(performance_score, 2))),
+            color = "#9CA3AF", alpha = 0.30, linewidth = 0.5) +
+  geom_point(data = df,
+             aes(x = period_idx, y = performance_score,
+                 text = paste0("<b>", employee_id, "</b>",
+                               "<br>", department, " · ", level,
+                               "<br>", period_label, ": ", round(performance_score, 2))),
+             color = "#9CA3AF", alpha = 0.5, size = 1.4) +
+  geom_ribbon(data = period_means,
+              aes(x = period_idx, ymin = ymin, ymax = ymax),
+              fill = PAL$accent, alpha = 0.18) +
+  geom_line(data = period_means,
+            aes(x = period_idx, y = mean_score,
+                text = paste0("<b>", period_label, "</b>",
+                              "<br>Cohort mean: ", round(mean_score, 2),
+                              "<br>± 1 SE: [", round(ymin, 2), ", ", round(ymax, 2), "]",
+                              "<br>n = ", n)),
+            color = PAL$accent, linewidth = 1.2, group = 1) +
+  geom_point(data = period_means,
+             aes(x = period_idx, y = mean_score,
+                 text = paste0("<b>", period_label, "</b>",
+                               "<br>Cohort mean: ", round(mean_score, 2),
+                               "<br>n = ", n)),
+             color = PAL$accent, size = 3.5) +
+  scale_x_continuous(breaks = 1:6, labels = period_lbls) +
+  labs(title = "Performance Trajectory Over Six Half-Yearly Reviews",
+       subtitle = "Individual employees (grey) + cohort mean ± 1 SE (red)",
+       x = "Review Period", y = "Performance Score")
+
+make_interactive(p_time, tooltip = "text")
+```
+
+```{r}
+#| label: fig-manager
+#| fig-cap: "Performance score by manager, ordered by team mean. Twelve managers show substantial dispersion — from EMP034 (team mean 79.8) to EMP032 (team mean 93.5). **Hover boxes for team statistics.** The manager effect is tested formally in the hypothesis section."
+#| fig-width: 10
+#| fig-height: 5
+
+mgr_means <- df |>
+  group_by(manager_id) |>
+  summarise(mean_score = mean(performance_score, na.rm = TRUE),
+            n = n(), .groups = "drop") |>
+  arrange(mean_score)
+mgr_order <- mgr_means$manager_id
+
+firm_mean <- mean(df$performance_score, na.rm = TRUE)
+
+p_mgr <- ggplot(df, aes(x = factor(manager_id, levels = mgr_order),
+                         y = performance_score,
+                         text = paste0("<b>Manager: ", manager_id, "</b>",
+                                       "<br>Employee: ", employee_id,
+                                       "<br>Score: ", round(performance_score, 2),
+                                       "<br>Department: ", department))) +
+  geom_boxplot(width = 0.6, alpha = 0.75, fill = PAL$primary,
+               outlier.shape = NA) +
+  geom_jitter(width = 0.15, alpha = 0.55, color = "#404040", size = 1.3) +
+  geom_hline(yintercept = firm_mean, color = PAL$accent,
+             linetype = "dashed", linewidth = 0.7) +
+  labs(title = "Performance by Manager — Between-Team Variation",
+       subtitle = sprintf("Firm mean = %.1f (dashed red); team means range %.1f to %.1f",
+                          firm_mean, min(mgr_means$mean_score), max(mgr_means$mean_score)),
+       x = "Manager (ordered by team mean, low → high)",
+       y = "Performance Score") +
+  theme(axis.text.x = element_text(angle = 35, hjust = 1, size = 8.5))
+
+make_interactive(p_mgr, tooltip = "text")
+```
+
+**Plain-language interpretation.** The data are usable but unbalanced: CS supplies roughly 38% of all observations while Finance and People & Culture each have just 12 rows. Performance scores cluster between 82 and 92 with a small left tail. The six-period trajectory shows the *cohort* average barely moves between 2023 H1 and 2025 H2, but *individual* employees swing by several points between periods. The manager view is the most striking single chart in the report: team means range from \~80 to \~93 — a gap of more than two standard deviations of the outcome variable. Some of this is genuine performance heterogeneity; some is plausibly rater drift. Either way, it warrants a calibration conversation.
+
+::: callout-important
+## Key Finding · Manager-Level Dispersion
+
+Twelve managers' team-mean performance scores span **a 13.7-point range (79.8 to 93.5)** — more than two standard deviations of the outcome variable. This is the single most consequential pattern visible in the EDA: it tells us a meaningful share of what the firm currently records as "individual performance" is actually a function of who is assessing the individual. The formal manager-ANOVA test in the next section confirms this dispersion is statistically real, not sampling noise.
+:::
+
+# Visualisation of Bivariate Patterns {#sec-viz}
+
+> *Technique 2 of 5 · Translating relationships into readable shapes*
+
+::: theory-recap
+**Theory recap.** Visualisation translates statistical relationships into shapes a non-statistician can read in seconds [@cleveland1985; @wickham2016]. Scatter plots, boxplots, and heat maps each have a job: scatter for continuous-by-continuous patterns, boxplots for continuous-by-categorical comparisons, and heat maps for the multivariable correlation structure.
+
+**Business justification.** When the Human Performance Committee sees a heat map showing prior performance and tenure as the warm cells while training intensity is near zero, the takeaway is immediate. The same finding in a coefficient table would not survive the first board slide.
+:::
+
+```{r}
+#| label: fig-correlation-heatmap
+#| fig-cap: "Correlation matrix across numeric variables. Warm cells indicate positive correlations, cool cells negative. **Hover any cell for the correlation coefficient.**"
+#| fig-width: 8.5
+#| fig-height: 7
+
+num_cols_corr <- c("tenure_years","years_in_role","prior_performance",
+                   "performance_score","performance_change",
+                   "training_participation_intensity","promotion_status")
+corr_mat <- cor(df[, num_cols_corr], use = "pairwise.complete.obs")
+
+# Keep lower triangle; upper as NA for cleaner look
+z <- corr_mat
+z[upper.tri(z)] <- NA
+text_labels <- ifelse(is.na(z), "", sprintf("%.2f", z))
+
+plotly::plot_ly(
+  x = num_cols_corr,
+  y = num_cols_corr,
+  z = z,
+  type = "heatmap",
+  colorscale = list(
+    list(0,   "#C0504D"),
+    list(0.5, "white"),
+    list(1,   "#2E7D8F")
+  ),
+  zmid = 0, zmin = -1, zmax = 1,
+  text = text_labels,
+  texttemplate = "%{text}",
+  textfont = list(size = 12, color = "#1F2937"),
+  xgap = 2, ygap = 2,
+  colorbar = list(title = "Pearson r", thickness = 14, len = 0.7,
+                  tickvals = c(-1, -0.5, 0, 0.5, 1)),
+  hovertemplate = "<b>%{y}</b> ↔ <b>%{x}</b><br>r = %{z:.3f}<extra></extra>"
+) |>
+  plotly::layout(
+    title = list(text = "<b>Correlation Matrix of Numeric Variables</b>",
+                 x = 0.5, font = list(size = 14)),
+    xaxis = list(tickangle = -35, side = "bottom", showgrid = FALSE,
+                 tickfont = list(size = 11)),
+    yaxis = list(autorange = "reversed", showgrid = FALSE,
+                 tickfont = list(size = 11)),
+    paper_bgcolor = "white", plot_bgcolor = "white",
+    margin = list(l = 200, r = 40, t = 60, b = 130)
+  ) |>
+  plotly::config(displayModeBar = "hover",
+                 modeBarButtonsToRemove = c("lasso2d","select2d","autoScale2d"))
+```
+
+```{r}
+#| label: fig-developmental
+#| fig-cap: "Performance by developmental factors. Training intensity shows no visible lift between low and high. Recently promoted employees sit modestly below the non-promoted group — likely a learning-curve effect that the regression analysis investigates further. **Hover any box or point for full detail.**"
+#| fig-width: 11
+#| fig-height: 4.4
+
+p_train <- ggplot(df, aes(x = training_label, y = performance_score, fill = training_label,
+                           text = paste0("<b>", training_label, " training</b>",
+                                         "<br>Employee: ", employee_id,
+                                         "<br>", department, " · ", level,
+                                         "<br>Score: ", round(performance_score, 2)))) +
+  geom_boxplot(width = 0.45, alpha = 0.75, outlier.shape = NA) +
+  geom_jitter(width = 0.18, alpha = 0.55, color = "#404040", size = 1.3) +
+  scale_fill_manual(values = c("Low (1)" = PAL$low, "High (2)" = PAL$high),
+                    guide = "none") +
+  labs(title = "Performance by Training Intensity",
+       x = "Training Participation Intensity", y = "Performance Score")
+
+p_promo <- ggplot(df, aes(x = promo_label, y = performance_score, fill = promo_label,
+                           text = paste0("<b>", promo_label, "</b>",
+                                         "<br>Employee: ", employee_id,
+                                         "<br>", department, " · ", level,
+                                         "<br>Score: ", round(performance_score, 2)))) +
+  geom_boxplot(width = 0.45, alpha = 0.75, outlier.shape = NA) +
+  geom_jitter(width = 0.18, alpha = 0.55, color = "#404040", size = 1.3) +
+  scale_fill_manual(values = c("Not promoted" = PAL$promo_no, "Promoted" = PAL$promo_yes),
+                    guide = "none") +
+  labs(title = "Performance by Promotion Status",
+       x = "Promotion Status", y = "Performance Score")
+
+plotly::subplot(
+  make_interactive(p_train, tooltip = "text"),
+  make_interactive(p_promo, tooltip = "text"),
+  nrows = 1, margin = 0.06, titleX = TRUE, titleY = TRUE
+)
+```
+
+**Plain-language interpretation.** The heat map confirms two intuitions and refutes one. The confirmations: a person's score this period mostly resembles their score last period (r = 0.55), and tenure tracks performance gently upward (r = 0.38). The refutation: training intensity does not move with performance (r ≈ 0.04). The developmental boxplots make the same point: in an organisation that invests deliberately in training, the absence of a visible lift between Level 1 and Level 2 participants is itself a finding that demands attention.
+
+::: callout-warning
+## Watch-Out · The Developmental Levers Are Flat
+
+Both training participation intensity (r ≈ +0.04) and within-period promotion status (r ≈ –0.13) show essentially zero or negative association with performance. This does *not* mean these investments are wasted — but it does mean the case for continuing them at current intensity cannot be defended from these data alone. A more granular L&D dataset or a longer time-lag analysis is needed before drawing firmer conclusions.
+:::
+
+# Hypothesis Testing {#sec-hyp}
+
+> *Technique 3 of 5 · Discipline against narrative drift*
+
+::: theory-recap
+**Theory recap.** A formal hypothesis test pits a null (no effect) against an alternative and asks whether the observed pattern is unlikely under the null [@welch1947]. We use Welch's two-sample *t*-test where variances may differ and one-way ANOVA for three-or-more-group comparisons. With n = 153 and a near-normal performance distribution, parametric tests are appropriate.
+
+**Business justification.** HR teams routinely make claims of the form *"high-training employees outperform"* or *"the IB department is our top team"*. Hypothesis testing is the discipline that separates a real signal from sampling noise — the difference between a defensible recommendation to the Human Performance Committee and a narrative built on hope.
+:::
+
+Six pre-specified hypotheses are tested. The first five address the analytical question directly; **H6** is added in support of the manager-level upgrade.
+
+- **H1.** Promoted employees have higher performance scores than non-promoted employees.
+- **H2.** Employees with higher training intensity (level 2) outperform those with lower intensity (level 1).
+- **H3.** Mean performance differs across departments.
+- **H4.** Tenure is positively correlated with performance.
+- **H5.** Prior performance is positively correlated with current performance.
+- **H6.** Mean performance differs across managers (between-team variation is non-random).
+
+```{r}
+#| label: hypothesis-tests
+#| code-fold: false
+
+decision <- function(p) ifelse(p < 0.05, "Reject H0", "Do not reject H0")
+
+t1 <- t.test(performance_score ~ promotion_status, data = df, var.equal = FALSE)
+t2 <- t.test(performance_score ~ training_participation_intensity,
+             data = df, var.equal = FALSE)
+a3 <- summary(aov(performance_score ~ department, data = df))[[1]]
+c4 <- cor.test(df$tenure_years, df$performance_score)
+c5 <- cor.test(df$prior_performance, df$performance_score)
+
+big_mgrs <- df |> count(manager_id) |> filter(n >= 3) |> pull(manager_id)
+a6 <- summary(aov(performance_score ~ manager_id,
+                  data = filter(df, manager_id %in% big_mgrs)))[[1]]
+
+tibble(
+  Hypothesis = c(
+    "H1: Promoted vs Not promoted",
+    "H2: High training vs Low training",
+    "H3: Department differences",
+    "H4: Tenure correlates with performance",
+    "H5: Prior correlates with current performance",
+    "H6: Manager differences"
+  ),
+  Test = c("Welch t","Welch t","One-way ANOVA","Pearson r","Pearson r","One-way ANOVA"),
+  Statistic = c(
+    sprintf("t = %.3f", t1$statistic),
+    sprintf("t = %.3f", t2$statistic),
+    sprintf("F = %.3f", a3[1, "F value"]),
+    sprintf("r = %+.3f", c4$estimate),
+    sprintf("r = %+.3f", c5$estimate),
+    sprintf("F = %.3f", a6[1, "F value"])
+  ),
+  `p-value` = c(
+    sprintf("%.4f", t1$p.value),
+    sprintf("%.4f", t2$p.value),
+    sprintf("%.4f", a3[1, "Pr(>F)"]),
+    sprintf("%.4f", c4$p.value),
+    sprintf("%.4f", c5$p.value),
+    sprintf("%.4f", a6[1, "Pr(>F)"])
+  ),
+  Decision = c(
+    decision(t1$p.value),
+    decision(t2$p.value),
+    decision(a3[1, "Pr(>F)"]),
+    decision(c4$p.value),
+    decision(c5$p.value),
+    decision(a6[1, "Pr(>F)"])
+  )
+) |> kable()
+```
+
+**Plain-language interpretation.** Four of the six tests reject the null at p \< 0.05.
+
+**H5 (prior performance)** is by far the strongest result — a person's score this period closely tracks their score last period. **H4 (tenure)** confirms the gentle upward tenure effect. **H3 (department)** is highly significant: the F-statistic of 8.16 is driven by Finance trailing CS, IB, and People & Culture by 7–9 points on average. **H6 (manager)** is the new upgrade finding — between-manager variation is real, not noise, and substantial.
+
+**H1 (promotion)** rejects the null but in the *wrong direction* for an "incentive" narrative: promoted employees in this sample score 2.5 points *lower* than non-promoted employees (t = –2.35, p = 0.025). The most defensible interpretation is a learning-curve effect — newly promoted staff are being assessed in unfamiliar roles. **H2 (training intensity)** does not reject the null at all (t = 0.50, p = 0.62); the high- and low-training groups are statistically indistinguishable on the performance score.
+
+::: callout-note
+## Interpreting the Promotion Finding
+
+The H1 result is statistically significant but in the unexpected direction. Rather than treating this as evidence that promotion *hurts* performance, the more sober reading is that **newly promoted employees are being assessed against a higher bar than they had in their previous role**. The fixed-effects robustness check in the regression section is consistent with this learning-curve interpretation — promotion shows no significant within-employee effect, suggesting the lower scores reflect the new role's demands rather than a decline in the person.
+:::
+
+# Correlation Analysis {#sec-corr}
+
+> *Technique 4 of 5 · Triaging the candidate drivers*
+
+::: theory-recap
+**Theory recap.** The Pearson correlation coefficient *r* measures the strength and direction of a linear relationship between two continuous variables, ranging from –1 to +1, with the associated *p*-value testing whether the population *r* differs from zero. Correlation is necessary but not sufficient for causation — it answers "do these move together?" not "does one drive the other?"
+
+**Business justification.** Correlation is the standard first cut in any scoping exercise — used as a triage tool, it tells the analyst which variables are worth promoting into the regression model and which can be dropped. For development and succession planning at Argentil, knowing which factors actually move alongside performance prevents resources from being spent on interventions that are not connected to outcomes.
+:::
+
+```{r}
+#| label: tbl-correlations
+#| tbl-cap: "Pearson correlations of each predictor with performance score"
+
+target <- "performance_score"
+predictors <- c("tenure_years","years_in_role","prior_performance",
+                "training_participation_intensity","promotion_status",
+                "performance_change")
+
+corr_rows <- lapply(predictors, function(p) {
+  sub <- df[, c(p, target)] |> drop_na()
+  ct  <- cor.test(sub[[p]], sub[[target]])
+  tibble(
+    Predictor    = p,
+    n            = nrow(sub),
+    `Pearson r`  = round(unname(ct$estimate), 3),
+    `p-value`    = round(ct$p.value, 4),
+    Significance = case_when(
+      ct$p.value < 0.001 ~ "***",
+      ct$p.value < 0.01  ~ "**",
+      ct$p.value < 0.05  ~ "*",
+      TRUE               ~ "ns"
+    )
+  )
+})
+bind_rows(corr_rows) |>
+  arrange(desc(abs(`Pearson r`))) |>
+  kable()
+```
+
+```{r}
+#| label: fig-scatters
+#| fig-cap: "Two strongest bivariate associations with performance: tenure (left) and prior performance (right). Points are coloured by department; the red line is the OLS fit. **Hover any point for the employee profile; click legend items to filter by department.**"
+#| fig-width: 11
+#| fig-height: 5
+
+dep_colors <- c(CS = PAL$CS, IB = PAL$IB, PIPE = PAL$PIPE, Finance = PAL$Finance)
+
+t_test  <- cor.test(df$tenure_years, df$performance_score)
+sub_pp  <- df |> drop_na(prior_performance, performance_score)
+pp_test <- cor.test(sub_pp$prior_performance, sub_pp$performance_score)
+
+p_ten <- ggplot(df, aes(x = tenure_years, y = performance_score,
+                         color = department,
+                         text = paste0("<b>", employee_id, "</b>",
+                                       "<br>", department, " · ", level,
+                                       "<br>Tenure: ", tenure_years, " yrs",
+                                       "<br>Score: ", round(performance_score, 2)))) +
+  geom_point(size = 2.5, alpha = 0.75) +
+  geom_smooth(aes(group = 1), method = "lm", se = FALSE,
+              color = PAL$accent, linewidth = 1) +
+  scale_color_manual(values = dep_colors) +
+  labs(title = sprintf("Tenure vs Performance  (r = %.3f, p = %.4f)",
+                       t_test$estimate, t_test$p.value),
+       x = "Tenure (years)", y = "Performance Score", color = NULL)
+
+p_prior <- ggplot(sub_pp, aes(x = prior_performance, y = performance_score,
+                                color = department,
+                                text = paste0("<b>", employee_id, "</b>",
+                                              "<br>", department, " · ", level,
+                                              "<br>Prior: ", round(prior_performance, 2),
+                                              "<br>Current: ", round(performance_score, 2)))) +
+  geom_point(size = 2.5, alpha = 0.75) +
+  geom_smooth(aes(group = 1), method = "lm", se = FALSE,
+              color = PAL$accent, linewidth = 1) +
+  scale_color_manual(values = dep_colors) +
+  labs(title = sprintf("Prior vs Current Performance  (r = %.3f, p = %.4f)",
+                       pp_test$estimate, pp_test$p.value),
+       x = "Prior Performance Score", y = "Current Performance Score", color = NULL)
+
+plotly::subplot(
+  make_interactive(p_ten,   tooltip = "text"),
+  make_interactive(p_prior, tooltip = "text"),
+  nrows = 1, margin = 0.06, titleX = TRUE, titleY = TRUE
+)
+```
+
+**Plain-language interpretation.** The four predictors that move with performance, in descending order of strength, are: **prior performance** (r = +0.55), **performance change** (r = +0.46), **tenure** (r = +0.38), and **years-in-role** (r = +0.32). The `performance_change` association is mechanically interesting but not behaviourally informative (it shares its definition with the outcome through `prior_performance`). The takeaway: continuous individual factors carry the bivariate signal; the developmental binary variables (training intensity r = +0.04, promotion status r = –0.13) do not.
+
+::: callout-tip
+## Business Implication · Where the Signal Actually Lives
+
+The variables ACL tracks most carefully are: training programmes attended and promotion events which show effectively zero bivariate signal with the performance outcome. Meanwhile the **quieter, less-tracked variables**: tenure and prior performance carry the bulk of the explained variance. This argues for two practical shifts: (1) capture more granular L&D data so any training effect that exists has a chance of being detected, and (2) treat prior performance as a leading indicator for early-warning conversations rather than a backward-looking record.
+:::
+
+# Regression Analysis {#sec-reg}
+
+> *Technique 5 of 5 · Isolating partial effects, holding the others fixed*
+
+::: theory-recap
+**Theory recap.** Multiple linear regression models the conditional mean of an outcome as a linear function of several predictors, allowing each coefficient to be interpreted as the predicted change in the outcome per one-unit change in that predictor *holding all others fixed* [@james2013; @adi2026]. Statistical inference rests on the Gauss–Markov assumptions: linearity, independent errors, homoscedasticity, and approximately normal residuals.
+
+**Business justification.** Bivariate correlation cannot answer the question that strategic people decisions hinge on: *"after controlling for the things I cannot change quickly i.e., tenure, department, prior score, does training intensity buy me extra performance?"* That is a partial-effect question, and regression is the tool that delivers it.
+:::
+
+## Full model
+
+The full specification regresses current `performance_score` on individual factors (tenure, years-in-role, prior performance), developmental factors (training-intensity dummy, promotion dummy), and organisational factors (department dummies with CS as the reference, level-band dummies with Associate as the reference). The thirteen job levels were collapsed into eight bands to keep the model identifiable at n = 139.
+
+```{r}
+#| label: regression-full
+#| code-fold: false
+
+reg_df <- df |>
+  filter(!is.na(prior_performance)) |>
+  mutate(
+    level_band = case_when(
+      str_detect(level, "Senior Vice President")                ~ "Executive",
+      str_detect(level, "Vice President")                       ~ "VP",
+      str_detect(level, "Principal Associate|Senior Associate") ~ "Senior Manager",
+      str_detect(level, "Associate")                            ~ "Associate",
+      str_detect(level, "Analyst")                              ~ "Analyst",
+      str_detect(level, "Graduate")                             ~ "Graduate",
+      str_detect(level, "Driver")                               ~ "Driver",
+      str_detect(level, "Administrative")                       ~ "Admin",
+      TRUE                                                      ~ "Other"
+    ),
+    training_high = as.integer(training_participation_intensity == 2),
+    department = relevel(factor(department), ref = "CS"),
+    level_band = relevel(factor(level_band), ref = "Associate")
+  )
+
+fit_full <- lm(
+  performance_score ~ tenure_years + years_in_role + prior_performance +
+                       training_high + promotion_status +
+                       department + level_band,
+  data = reg_df
+)
+
+broom::tidy(fit_full) |>
+  transmute(
+    Variable     = term,
+    Coefficient  = round(estimate, 3),
+    `Std. Error` = round(std.error, 3),
+    t            = round(statistic, 2),
+    `p-value`    = round(p.value, 4),
+    Sig.         = case_when(
+      p.value < 0.001 ~ "***",
+      p.value < 0.01  ~ "**",
+      p.value < 0.05  ~ "*",
+      p.value < 0.10  ~ ".",
+      TRUE            ~ ""
+    )
+  ) |>
+  kable()
+```
+
+```{r}
+#| label: regression-full-summary
+#| code-fold: false
+
+s <- summary(fit_full)
+cat(sprintf("Observations: %d\n", nobs(fit_full)))
+cat(sprintf("Predictors (incl. intercept): %d\n", length(coef(fit_full))))
+cat(sprintf("R-squared: %.4f\n", s$r.squared))
+cat(sprintf("Adjusted R-squared: %.4f\n", s$adj.r.squared))
+cat(sprintf("F(%d, %d) = %.3f, p = %.6f\n",
+            s$fstatistic[2], s$fstatistic[3], s$fstatistic[1],
+            pf(s$fstatistic[1], s$fstatistic[2], s$fstatistic[3], lower.tail = FALSE)))
+cat(sprintf("Residual standard error: %.3f\n", s$sigma))
+```
+
+The full model explains roughly 41% of the variance (R² = 0.41, adj-R² = 0.33) and is jointly significant (F = 5.61, p \< 0.001). Among the predictors, **prior performance** is highly significant (p \< 0.001), the **Finance dummy** is marginal (p ≈ 0.07), and the developmental variables (training, promotion) and most level dummies are individually non-significant once the individual factors are controlled for.
+
+## Reduced model
+
+After removing predictors with p \> 0.20 to address overfitting (the level-band dummies in particular fragment a modest sample into eight groups), the reduced specification retains tenure, prior performance, and the department block.
+
+```{r}
+#| label: regression-reduced
+#| code-fold: false
+
+fit_red <- lm(
+  performance_score ~ tenure_years + prior_performance + department,
+  data = reg_df
+)
+
+broom::tidy(fit_red) |>
+  transmute(
+    Variable     = term,
+    Coefficient  = round(estimate, 3),
+    `Std. Error` = round(std.error, 3),
+    t            = round(statistic, 2),
+    `p-value`    = round(p.value, 4),
+    Sig.         = case_when(
+      p.value < 0.001 ~ "***",
+      p.value < 0.01  ~ "**",
+      p.value < 0.05  ~ "*",
+      p.value < 0.10  ~ ".",
+      TRUE            ~ ""
+    )
+  ) |>
+  kable()
+```
+
+```{r}
+#| label: regression-reduced-summary
+#| code-fold: false
+
+s <- summary(fit_red)
+cat(sprintf("R-squared: %.4f\n", s$r.squared))
+cat(sprintf("Adjusted R-squared: %.4f\n", s$adj.r.squared))
+cat(sprintf("F(%d, %d) = %.3f, p = %.6f\n",
+            s$fstatistic[2], s$fstatistic[3], s$fstatistic[1],
+            pf(s$fstatistic[1], s$fstatistic[2], s$fstatistic[3], lower.tail = FALSE)))
+cat(sprintf("Residual standard error: %.3f\n", s$sigma))
+```
+
+```{r}
+#| label: fig-forest
+#| fig-cap: "Forest plot of reduced-model coefficients with 95% confidence intervals. Bars not crossing the dashed zero line indicate independent significant effects. **Hover each point for full coefficient details.**"
+#| fig-width: 9.5
+#| fig-height: 4.4
+
+label_map <- c(
+  tenure_years        = "Tenure (per year)",
+  prior_performance   = "Prior performance (per pt)",
+  departmentIB        = "Dept: IB (vs CS)",
+  departmentPIPE      = "Dept: PIPE (vs CS)",
+  departmentFinance   = "Dept: Finance (vs CS)"
+)
+
+coef_df <- broom::tidy(fit_red, conf.int = TRUE) |>
+  filter(term != "(Intercept)") |>
+  mutate(
+    label = label_map[term],
+    color_cat = factor(case_when(
+      p.value < 0.05 ~ "p < 0.05",
+      p.value < 0.10 ~ "p < 0.10",
+      TRUE           ~ "ns"
+    ), levels = c("p < 0.05", "p < 0.10", "ns")),
+    hover = paste0("<b>", label, "</b>",
+                   "<br>β = ", round(estimate, 3),
+                   "<br>95% CI: [", round(conf.low, 3), ", ", round(conf.high, 3), "]",
+                   "<br>p = ", round(p.value, 4))
+  )
+
+sig_palette <- c("p < 0.05" = PAL$primary, "p < 0.10" = PAL$gold, "ns" = "#9CA3AF")
+
+p_forest <- ggplot(coef_df,
+                   aes(x = estimate,
+                       y = fct_rev(factor(label, levels = unname(label_map))),
+                       color = color_cat,
+                       text = hover)) +
+  geom_vline(xintercept = 0, color = "#9CA3AF", linetype = "dashed", linewidth = 0.6) +
+  geom_errorbarh(aes(xmin = conf.low, xmax = conf.high),
+                 height = 0.18, linewidth = 0.9, color = "#1F2937") +
+  geom_point(size = 4) +
+  scale_color_manual(values = sig_palette, name = NULL, drop = FALSE) +
+  labs(title = "Regression Coefficients (Reduced Model) with 95% Confidence Intervals",
+       x = "Effect on Performance Score (points)", y = NULL)
+
+make_interactive(p_forest, tooltip = "text")
+```
+
+The reduced model has a *higher* adjusted R² (0.347 vs 0.334) than the full model — fewer predictors, more signal per parameter. Each additional year of **tenure** adds roughly **0.32 points** of performance (p = 0.045), each prior-performance point translates into **0.43 points** of current performance (p \< 0.001), and Finance employees score \~3.6 points lower than CS employees on average (p ≈ 0.06).
+
+::: callout-important
+## Key Finding · The Two-Variable Performance Equation
+
+After thinning the model from 16 predictors to 6, only **prior performance** and **tenure** survive as statistically reliable independent drivers of the current performance score. The implication is operationally clean: the variables ACL should track most carefully are not the developmental events (training, promotion) but the **stable individual signals** (where someone scored last cycle, how long they have been in the firm).
+:::
+
+## Robustness check — employee fixed effects
+
+To address the concern that 153 observations across only 31 employees violate the OLS independence assumption, the reduced specification was re-fit with employee fixed effects using `fixest::feols`. This absorbs all time-invariant employee characteristics and identifies effects only from within-employee changes over time.
+
+```{r}
+#| label: regression-fe
+#| code-fold: false
+
+fit_fe <- fixest::feols(
+  performance_score ~ tenure_years + prior_performance + training_high + promotion_status |
+                       employee_id,
+  data = reg_df
+)
+
+fe_tbl <- tibble(
+  Variable     = c("tenure_years (within)","prior_performance (within)",
+                   "training_high (within)","promoted (within)"),
+  Coefficient  = round(coef(fit_fe), 3),
+  `Std. Error` = round(se(fit_fe), 3),
+  t            = round(coef(fit_fe) / se(fit_fe), 2),
+  `p-value`    = round(pvalue(fit_fe), 4)
+) |>
+  mutate(Sig. = case_when(
+    `p-value` < 0.001 ~ "***",
+    `p-value` < 0.01  ~ "**",
+    `p-value` < 0.05  ~ "*",
+    `p-value` < 0.10  ~ ".",
+    TRUE              ~ ""
+  ))
+kable(fe_tbl)
+
+cat(sprintf("\nWithin R-squared: %.4f\n", fitstat(fit_fe, "wr2", verbose = FALSE)$wr2))
+cat(sprintf("Observations: %d\n", nobs(fit_fe)))
+cat(sprintf("Number of employee fixed effects: %d\n",
+            length(unique(reg_df$employee_id))))
+```
+
+**Plain-language interpretation of the FE check.** The fixed-effects specification finds none of the predictors significant within-employee. Within R² collapses to \~0.02. This is informative, not a failure: it tells us that the **tenure** and **prior-performance** effects identified by OLS are largely *between-employee* phenomena — high-tenure employees tend to be high-performance employees, but individual employees do not measurably gain performance points as their own tenure ticks up. The reverse is also useful: training and promotion show no significant within-employee effect either, reinforcing that these levers are not visibly working on the performance score at the individual level during the study window.
+
+::: callout-note
+## Why the Fixed-Effects Result Strengthens Rather than Weakens the Story
+
+A reader unfamiliar with panel methods might see the FE model's near-zero R² as evidence that "nothing works". The opposite is true. The FE transformation removes everything stable about each person — innate ability, manager, role, tenure level — and asks whether the *remaining* within-person changes still predict performance. They don't, which means the substantial OLS effects we estimated reflect **stable differences between people** rather than spurious time trends. Argentil's data tells a between-employee story, and the recommendations should match that.
+:::
+
+## Diagnostics
+
+```{r}
+#| label: fig-diagnostics
+#| fig-cap: "Regression diagnostics for the reduced model. Residuals vs fitted (left) shows no clear funnel or curvature; the Q-Q plot (right) tracks the reference line through the central distribution with mild departures in the tails — acceptable for inference at n = 139. **Hover any point for residual values.**"
+#| fig-width: 11
+#| fig-height: 4.2
+
+diag_df <- tibble(
+  fitted   = fitted(fit_red),
+  resid    = residuals(fit_red),
+  obs_idx  = seq_along(fitted)
+)
+
+p_rvf <- ggplot(diag_df, aes(x = fitted, y = resid,
+                              text = paste0("Obs #", obs_idx,
+                                            "<br>Fitted: ", round(fitted, 2),
+                                            "<br>Residual: ", round(resid, 3)))) +
+  geom_point(color = PAL$primary, size = 2.2, alpha = 0.7) +
+  geom_hline(yintercept = 0, color = PAL$accent, linetype = "dashed", linewidth = 0.8) +
+  labs(title = "Residuals vs Fitted", x = "Fitted Values", y = "Residuals")
+
+qq_resid <- tibble(sample = sort(diag_df$resid)) |>
+  mutate(theoretical = qnorm(ppoints(n())))
+
+p_qq2 <- ggplot(qq_resid, aes(x = theoretical, y = sample,
+                              text = paste0("Theoretical: ", round(theoretical, 2),
+                                            "<br>Residual: ", round(sample, 3)))) +
+  geom_point(color = PAL$primary, alpha = 0.7, size = 1.8) +
+  geom_abline(slope = sd(qq_resid$sample), intercept = mean(qq_resid$sample),
+              color = PAL$accent, linewidth = 0.9) +
+  labs(title = "Q-Q Plot of Residuals",
+       x = "Theoretical Quantiles", y = "Sample Quantiles")
+
+plotly::subplot(
+  make_interactive(p_rvf, tooltip = "text"),
+  make_interactive(p_qq2, tooltip = "text"),
+  nrows = 1, margin = 0.06, titleX = TRUE, titleY = TRUE
+)
+```
+
+The residuals vs fitted plot shows no obvious heteroscedasticity, supporting the linearity and constant-variance assumptions. The Q-Q plot tracks the reference line through the middle 90% of the distribution with small departures at the extremes — the same outliers visible in the original score distribution. With n = 139, the central limit theorem makes the inferential statements robust to this mild non-normality.
+
+**Plain-language interpretation.** In business terms: hold two employees side by side, in the same department, with the same prior-period score. The one with five extra years of tenure is predicted to score about **1.6 points higher** today (5 × 0.32). Hold tenure constant: each prior-period point flows through to roughly **0.43 of a point** in the current period. The model explains 37% of the variance in performance — a meaningful but not overwhelming amount, which is appropriate given that performance scores at Argentil are tightly clustered and shaped by factors (managerial judgement, project context) that are not captured in any structured variable.
+
+# Integrated Findings & Recommendation
+
+The five techniques plus the two upgrade analyses tell a single, coherent story about performance at ACL.
+
+**EDA** revealed a panel that is larger and more time-rich than expected (31 employees, 153 person-period rows, six review periods), with structural missingness only on probation rows and the workforce spread across five departments. **Visualisation** flagged that within-person variation across periods is comparable to between-person variation, that Finance trails the other departments markedly, that the developmental factors look flat, and — the upgrade finding — that **manager-level dispersion is striking**, with twelve managers' team means ranging from 79.8 to 93.5. **Correlation analysis** identified prior performance (r = 0.55) and tenure (r = 0.38) as the most strongly associated continuous predictors, while training intensity (r = 0.04) and promotion (r = –0.13) were negligible or negative. **Hypothesis testing** rejected the null for department differences (F = 8.16, p \< 0.001), manager differences (F = 4.94, p \< 0.001), tenure (p \< 0.001), prior performance (p \< 0.001), and — in the *wrong* direction for the policy narrative — promotion (t = –2.35, p = 0.025). **Regression analysis** confirmed tenure and prior performance as the surviving independent predictors with the Finance gap marginal. The **fixed-effects robustness check** confirmed that these effects operate largely between employees, not within.
+
+**Integrated answer to the research question.** Five driver categories emerge from the evidence:
+
+| Driver category | Key drivers | Direction & strength |
+|------------------------|------------------|------------------------------|
+| **Individual** | Prior performance, tenure | Strong positive; substantial within-employee persistence |
+| **Organisational (Dept)** | Department | Significant; Finance trails by \~7–9 points unadjusted, \~3.6 adjusted |
+| **Organisational (Manager)** | Manager (rater) | Between-team dispersion is real (ANOVA p \< 0.001) — calibration risk |
+| **Developmental** | Training intensity, promotion status | No positive effect; promotion shows a *negative* short-run effect |
+| **Temporal** | Review period (year) | Stable; no significant year-over-year drift (p = 0.44) |
+
+**Single recommendation.** The findings support **three focused, evidence-aligned investments**:
+
+::: callout-tip
+## Strategic Recommendations · Three Evidence-Aligned Investments
+
+1.  **Prioritise continuity, especially early-tenure support.** Tenure's measurable effect (β = +0.32 points per year, p = 0.045) makes structured onboarding, mentoring, and role clarity in years one to three the highest-evidence-base investment. Retention compounds; volatility erodes the persistence advantage the data shows.
+2.  **Investigate the Finance gap and the manager-level dispersion together.** Finance is small (n = 12) but the gap is large and replicated across multiple periods. The manager-level ANOVA (F = 4.94, p \< 0.001) suggests at least part of the cross-department story may be a rater-calibration issue rather than a true skill gap. A targeted calibration session with line managers — combined with a workload and role-clarity review in Finance — is the single highest-leverage next action.
+3.  **Re-examine the developmental levers before defending them or cutting them.** Training intensity shows no measurable effect on performance, and within-period promotion shows a negative short-run effect (the learning-curve interpretation). Three remedies are possible: (a) the training-intensity proxy is too coarse and a richer L&D dataset would reveal the effect; (b) the time-lag is longer than 18 months and a deferred-outcome study is needed; or (c) the design genuinely needs revision. The next step is a diagnostic with Learning & Development, not a budget decision.
+:::
+
+The objective is not to correct a performance problem — Argentil's workforce is performing in the high-effective band — but to deliberately strengthen the conditions that sustain that performance and to make sure each unit of developmental investment is connected to a measurable outcome.
+
+# Limitations & Further Work
+
+The dataset is small, observational, and tightly clustered. Five caveats matter most:
+
+::: callout-warning
+## Methodological Caveats to Bear in Mind
+
+- **Use of proxy variables.** Several development variables, particularly `training_participation_intensity`, are captured as proxies because more granular records (training hours, programme type, certification outcomes) were not available in structured form during the study window. A more precise assessment of training's impact would require ingestion of detailed L&D records.
+- **Sample size and unbalanced groups.** With 31 unique employees, only 12 observations each in Finance and People & Culture, 19 promotion events and 38 high-training rows, several tests are underpowered. A null result for training is consistent with a real but moderate effect this sample cannot detect.
+- **Limited variability in performance scores.** ACL's strong performance culture compresses the outcome into a narrow band (mean 86.6, SD 6.3), which reduces statistical power to detect drivers. A broader outcome distribution or a redesigned rating scale would allow deeper differentiation.
+- **Repeated observations within employees.** Up to six observations per employee violate the OLS independence assumption. The fixed-effects robustness check addresses this through the `feols` within-transformation; the natural full extension is a mixed-effects (random-intercepts) model using `lme4::lmer` that attributes within-employee variation properly.
+- **Rater effects are detected but not modelled.** The manager-level ANOVA establishes that between-manager variation is significant, but the report does not separate "genuine team performance differences" from "rater calibration differences." That separation requires a multi-rater design (the same employee evaluated by multiple managers), which is not available in this dataset.
+:::
+
+**With more data, time, and computing resources**, four extensions would strengthen the analysis: (i) a mixed-effects model with employee and manager random intercepts to separate the two sources of clustering; (ii) a difference-in-differences design comparing high- and low-training employees before and after their training period; (iii) a survival model for promotion timing; and (iv) a longer time window to capture deferred training effects, which typically emerge 12–24 months after participation.
+
+# References {.unnumbered}
+
+::: {#refs}
+:::
+
+# Appendix: AI Usage Statement {.unnumbered}
+
+AI tools including Claude and ChatGPT were used to support structuring, drafting, and coding guidance for this submission. The ggplot2/plotly chart styling, the `level_band` re-coding logic, the helper functions for hypothesis-test display, and prose-editing of the executive summary and integrated findings were assisted by AI. All data preparation, variable construction, the choice of which hypotheses to pre-specify, the decision to collapse thirteen job levels into eight bands, the model-reduction rule, the addition of the manager-variance analysis and the fixed-effects robustness check (using `fixest::feols`), the diagnostic interpretation, and every substantive interpretation of the findings including the decision to flag the promotion result as a likely learning-curve effect rather than a counter-incentive finding were independently undertaken and validated using my professional judgement and seven years of institutional knowledge of ACL's people function. The dataset was sourced from internal HR records (Power BI HPC report and HRIS) and assessed accordingly. All numeric outputs in this document are produced by the embedded code chunks and are reproducible from `employee_data.csv` using base R together with the `tidyverse`, `broom`, `fixest`, `plotly`, `knitr`, and `scales` packages.
+
+```{=html}
+<div class="doc-seal">
+  <strong>End of Report</strong>
+  Submitted in partial fulfilment of the Data Analytics Capstone Project — CS1<br>
+  Lagos Business School · 2026
+</div>
+```
