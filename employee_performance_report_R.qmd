@@ -1,10 +1,9 @@
 ---
-title: "Drivers of Employee Performance at Argentil"
+title: "Drivers of Employee Performance"
 subtitle: "A longitudinal analysis of individual, organisational, and developmental factors across six biannual review periods (2023–2025)"
 author:
   - name: "Tolu Bashorun"
-    affiliations:
-      - name: "Argentil"
+    
 date: today
 format:
   html:
@@ -146,8 +145,7 @@ df <- read_csv("employee_data.csv", show_col_types = FALSE) |>
 </div>
 ```
 
-This study addresses a single guiding question: **what are the key drivers of employee performance at Argentil, and how do individual, organisational, and developmental factors influence performance outcomes over time?** Argentil's lean, specialised workforce across investment banking, asset
-management, and capital advisory means every individual outcome compounds, making it essential to know which factors actually impact performance. The analysis uses a longitudinal panel of **31 employees across six half-yearly review periods (2023 H1 – 2025 H2; 153 records)** from the HPC Power BI report and HRIS, applying five techniques (EDA, Visualisation, Hypothesis Testing, Correlation, OLS Regression) with two additions: manager-level variance analysis and an employee fixed-effects robustness check.
+This study addresses a single guiding question: **what are the key drivers of employee performance and how do individual, organisational, and developmental factors influence performance outcomes over time?** AG's lean, specialised workforce across investment banking, asset management, and capital advisory means every individual outcome compounds, making it essential to know which factors actually impact performance. The analysis uses a longitudinal panel of **31 employees across six half-yearly review periods (2023 H1 – 2025 H2; 153 records)** from the HPC Power BI report and HRIS, applying five techniques (EDA, Visualisation, Hypothesis Testing, Correlation, OLS Regression) with two additions: manager-level variance analysis and an employee fixed-effects robustness check.
 
 Four findings dominate. **Prior performance** is the strongest driver (r = +0.55, p \< 0.001). **Tenure** holds in the multivariable model (β = +0.32 per year, p = 0.045). **Department** matters (ANOVA p \< 0.001), with Finance trailing by 7–9 points. **Manager-level dispersion** is substantial (ANOVA p \< 0.001) — team means span 79.8 to 93.5. Training intensity and within-period promotion show no positive independent effect. The reduced model explains 37% of variance (adj-R² = 0.347).
 
@@ -163,7 +161,7 @@ The findings point in one direction: **invest in continuity, calibrate the rater
 
 # Professional Disclosure
 
-I am Tolu Bashorun, **Associate Vice President, People & Culture at Argentil**, with responsibility for human resources practice across the Group's Nigerian operations spanning investment banking, principal investing, and asset management. The remit covers performance management, learning and development, talent management, compensation and benefits, and employee relations and engagement meaning people data is a live operational input into decisions made regularly across the employee lifecycle.
+I am Tolu Bashorun, **Associate Vice President, People & Culture at AG**, with responsibility for human resources practice across the Group's Nigerian operations spanning investment banking, principal investing, and asset management. The remit covers performance management, learning and development, talent management, compensation and benefits, and employee relations and engagement meaning people data is a live operational input into decisions made regularly across the employee lifecycle.
 
 ::: theory-recap
 **Exploratory Data Analysis (EDA)** sets the foundation. In a corporate HR setting, performance data is rarely clean or self-explanatory. As custodian of the Group's people records, the first responsibility is to understand the data before drawing conclusions: examining distributions, identifying anomalies, and surfacing structural gaps. In this study EDA confirmed that 14 first-observation rows had no `prior_performance` (employees in probation, structurally rather than randomly missing) and that the five departments are unevenly represented, facts that shape every later interpretation.
@@ -178,11 +176,11 @@ I am Tolu Bashorun, **Associate Vice President, People & Culture at Argentil**, 
 :::
 
 ::: theory-recap
-**Correlation Analysis** is the standard first quantitative pass; a fast, assumption-light way to triage which variables earn a place in the regression model. For development and succession planning at Argentil, knowing which factors actually move alongside performance prevents resources from being spent on interventions that are not connected to outcomes.
+**Correlation Analysis** is the standard first quantitative pass; a fast, assumption-light way to triage which variables earn a place in the regression model. For development and succession planning at AG, knowing which factors actually move alongside performance prevents resources from being spent on interventions that are not connected to outcomes.
 :::
 
 ::: theory-recap
-**Ordinary Least Squares Regression** completes the chain by isolating the partial effect of each driver while holding the others constant. It is the technique that converts correlation into a defensible statement about which lever does what which is the question that strategic people decisions at Argentil hinge on.
+**Ordinary Least Squares Regression** completes the chain by isolating the partial effect of each driver while holding the others constant. It is the technique that converts correlation into a defensible statement about which lever does what which is the question that strategic people decisions at AG hinge on.
 :::
 
 # Data Collection & Sampling
@@ -191,7 +189,7 @@ I am Tolu Bashorun, **Associate Vice President, People & Culture at Argentil**, 
 
 **Supplementary source.** The Human Resources Information System (HRIS) and general HR records, which supplied the time and role variables (hire year, tenure, years-in-role, job level, department), the manager identifier, the promotion status, and the training participation intensity. Both sources were accessed in the ordinary course of professional duties as data custodian.
 
-**Time period covered.** Six review periods: 2023 H1, 2023 H2, 2024 H1, 2024 H2, 2025 H1, and 2025 H2. The biannual review cycle is the standard cadence at Argentil.
+**Time period covered.** Six review periods: 2023 H1, 2023 H2, 2024 H1, 2024 H2, 2025 H1, and 2025 H2. The biannual review cycle is the standard cadence at AG.
 
 **Sampling approach.** A census; every employee with complete records in any of the six periods is included; no random sampling is applied. The file is a population snapshot of the relevant workforce, not a sample from it.
 
@@ -950,7 +948,7 @@ cat(sprintf("Number of employee fixed effects: %d\n",
 ::: callout-note
 ## Why the Fixed-Effects Result Strengthens Rather than Weakens the Story
 
-A reader unfamiliar with panel methods might see the FE model's near-zero R² as evidence that "nothing works". The opposite is true. The FE transformation removes everything stable about each person — innate ability, manager, role, tenure level — and asks whether the *remaining* within-person changes still predict performance. They don't, which means the substantial OLS effects we estimated reflect **stable differences between people** rather than spurious time trends. Argentil's data tells a between-employee story, and the recommendations should match that.
+A reader unfamiliar with panel methods might see the FE model's near-zero R² as evidence that "nothing works". The opposite is true. The FE transformation removes everything stable about each person — innate ability, manager, role, tenure level — and asks whether the *remaining* within-person changes still predict performance. They don't, which means the substantial OLS effects we estimated reflect **stable differences between people** rather than spurious time trends. AG's data tells a between-employee story, and the recommendations should match that.
 :::
 
 ## Diagnostics
@@ -996,18 +994,18 @@ plotly::subplot(
 
 The residuals vs fitted plot shows no obvious heteroscedasticity, supporting the linearity and constant-variance assumptions. The Q-Q plot tracks the reference line through the middle 90% of the distribution with small departures at the extremes — the same outliers visible in the original score distribution. With n = 139, the central limit theorem makes the inferential statements robust to this mild non-normality.
 
-**Plain-language interpretation.** In business terms: hold two employees side by side, in the same department, with the same prior-period score. The one with five extra years of tenure is predicted to score about **1.6 points higher** today (5 × 0.32). Hold tenure constant: each prior-period point flows through to roughly **0.43 of a point** in the current period. The model explains 37% of the variance in performance — a meaningful but not overwhelming amount, which is appropriate given that performance scores at Argentil are tightly clustered and shaped by factors (managerial judgement, project context) that are not captured in any structured variable.
+**Plain-language interpretation.** In business terms: hold two employees side by side, in the same department, with the same prior-period score. The one with five extra years of tenure is predicted to score about **1.6 points higher** today (5 × 0.32). Hold tenure constant: each prior-period point flows through to roughly **0.43 of a point** in the current period. The model explains 37% of the variance in performance — a meaningful but not overwhelming amount, which is appropriate given that performance scores at AG are tightly clustered and shaped by factors (managerial judgement, project context) that are not captured in any structured variable.
 
 # Integrated Findings & Recommendation
 
-The five techniques plus the two upgrade analyses tell a single, coherent story about performance at Argentil.
+The five techniques plus the two upgrade analyses tell a single, coherent story about performance at AG.
 
 **EDA** revealed a panel that is larger and more time-rich than expected (31 employees, 153 person-period rows, six review periods), with structural missingness only on probation rows and the workforce spread across five departments. **Visualisation** flagged that within-person variation across periods is comparable to between-person variation, that Finance trails the other departments markedly, that the developmental factors look flat, and — the upgrade finding — that **manager-level dispersion is striking**, with twelve managers' team means ranging from 79.8 to 93.5. **Correlation analysis** identified prior performance (r = 0.55) and tenure (r = 0.38) as the most strongly associated continuous predictors, while training intensity (r = 0.04) and promotion (r = –0.13) were negligible or negative. **Hypothesis testing** rejected the null for department differences (F = 8.16, p \< 0.001), manager differences (F = 4.94, p \< 0.001), tenure (p \< 0.001), prior performance (p \< 0.001), and — in the *wrong* direction for the policy narrative — promotion (t = –2.35, p = 0.025). **Regression analysis** confirmed tenure and prior performance as the surviving independent predictors with the Finance gap marginal. The **fixed-effects robustness check** confirmed that these effects operate largely between employees, not within.
 
 **Integrated answer to the research question.** Five driver categories emerge from the evidence:
 
 | Driver category | Key drivers | Direction & strength |
-|------------------------|------------------|------------------------------|
+|------------------------|-------------------|------------------------------|
 | **Individual** | Prior performance, tenure | Strong positive; substantial within-employee persistence |
 | **Organisational (Dept)** | Department | Significant; Finance trails by \~7–9 points unadjusted, \~3.6 adjusted |
 | **Organisational (Manager)** | Manager (rater) | Between-team dispersion is real (ANOVA p \< 0.001) — calibration risk |
@@ -1024,7 +1022,7 @@ The five techniques plus the two upgrade analyses tell a single, coherent story 
 3.  **Re-examine the developmental levers before defending them or cutting them.** Training intensity shows no measurable effect on performance, and within-period promotion shows a negative short-run effect (the learning-curve interpretation). Three remedies are possible: (a) the training-intensity proxy is too coarse and a richer L&D dataset would reveal the effect; (b) the time-lag is longer than 18 months and a deferred-outcome study is needed; or (c) the design genuinely needs revision. The next step is a diagnostic with Learning & Development, not a budget decision. This is to further assess the developmental interventions (training and promotion) before adjusting related budgets.
 :::
 
-The objective is not to correct a performance problem. Argentil's workforce is performing in the high-effective band but to deliberately strengthen the conditions that sustain that performance and to make sure each unit of developmental investment is connected to a measurable outcome.
+The objective is not to correct a performance problem. AG's workforce is performing in the high-effective band but to deliberately strengthen the conditions that sustain that performance and to make sure each unit of developmental investment is connected to a measurable outcome.
 
 # Limitations & Further Work
 
