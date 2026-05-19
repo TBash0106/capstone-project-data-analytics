@@ -639,6 +639,77 @@ dl dd {
   color: var(--c-muted);
 }
 
+/* ============================================================
+   REFERENCES SECTION — APA 7 bibliography rendered by Quarto
+   Targets the #refs container and individual .csl-entry items.
+   Spacing-led design (no actual bullet markers — APA forbids).
+   ============================================================ */
+#refs {
+  background: white;
+  border: 1px solid var(--c-line);
+  border-radius: var(--radius-lg);
+  padding: 1.6rem 2rem 0.8rem;
+  margin: 1.6rem 0 2rem;
+  box-shadow: var(--shadow-sm);
+}
+
+/* Each reference entry — APA hanging indent + clean separation */
+.csl-entry {
+  font-family: var(--font-serif);
+  font-size: 0.96rem;
+  line-height: 1.6;
+  color: var(--c-ink);
+  padding: 0.85rem 0 0.85rem 1rem;
+  margin: 0;
+  border-bottom: 1px solid var(--c-line-light);
+  border-left: 3px solid transparent;
+  /* Hanging indent: first line flush, continuation indented 1.5em */
+  padding-left: 1.5em;
+  text-indent: -1.5em;
+  transition: all 0.15s ease;
+}
+.csl-entry:hover {
+  border-left-color: var(--c-primary);
+  background: linear-gradient(to right, var(--c-primary-soft) 0%, transparent 60%);
+  padding-left: 1.7em;
+}
+.csl-entry:last-child {
+  border-bottom: none;
+}
+.csl-entry:first-child {
+  padding-top: 0.4rem;
+}
+
+/* Italicised titles and journal names inside entries */
+.csl-entry em,
+.csl-entry i {
+  color: var(--c-primary-dk);
+  font-style: italic;
+}
+
+/* DOIs and URLs in references — subtle, not garish */
+.csl-entry a {
+  color: var(--c-primary);
+  border-bottom: 1px dotted var(--c-primary);
+  word-break: break-word;
+}
+.csl-entry a:hover {
+  color: var(--c-accent);
+  border-bottom: 1px solid var(--c-accent);
+}
+
+/* Override default tight pandoc spacing on inner paragraphs */
+.csl-entry p {
+  margin-bottom: 0;
+  display: inline;
+}
+
+/* The hanging-indent block class some CSL styles emit */
+.csl-bib-body,
+div.references {
+  margin: 0;
+}
+
 /* ---------- DOCUMENT-END SEAL ---------- */
 .doc-seal {
   margin: 3.5rem auto 1.5rem;

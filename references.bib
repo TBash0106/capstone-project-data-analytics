@@ -1,31 +1,145 @@
+% ============================================================
+% REFERENCES — LBS Data Analytics Capstone CS1
+% Drivers of Employee Performance at Argentil Group
+%
+% Format: BibTeX entries rendered to APA 7 by Quarto
+% Coverage:
+%   - Course textbook (mandatory per brief)
+%   - The Argentil internal dataset
+%   - R language and Quarto software
+%   - Every R package loaded in the report
+%   - Academic method references cited in theory recaps
+% ============================================================
+
+% ============================================================
+% COURSE TEXTBOOK (mandatory)
+% ============================================================
 @book{adi2026,
-  author    = {Adi, B.},
-  title     = {AI-powered business analytics: A practical textbook for data-driven decision making — from data fundamentals to machine learning in Python and R},
+  author    = {Adi, Bongo},
+  title     = {AI-powered business analytics: A practical textbook for data-driven decision making — from data fundamentals to machine learning in {Python} and {R}},
   year      = {2026},
   publisher = {Lagos Business School / markanalytics.online},
-  address   = {Lagos},
   url       = {https://markanalytics.online}
 }
 
+% ============================================================
+% DATA SOURCE
+% Cited inline at the Primary Source line in Data Collection section
+% ============================================================
+@misc{argentil2025,
+  author       = {{Argentil}},
+  title        = {Employee performance dataset},
+  year         = {2023--2025},
+  howpublished = {Internal data},
+  organization = {People \& Culture Function, Argentil},
+  note         = {Internal HR records; accessed in capacity as data custodian}
+}
+
+% ============================================================
+% SOFTWARE: R LANGUAGE & QUARTO
+% ============================================================
 @manual{rcoreteam2024,
-  title        = {R: A language and environment for statistical computing (Version 4.x)},
+  title        = {R: A language and environment for statistical computing},
   author       = {{R Core Team}},
   organization = {R Foundation for Statistical Computing},
+  address      = {Vienna, Austria},
   year         = {2024},
+  note         = {Version 4.x},
   url          = {https://www.R-project.org/}
 }
 
+@manual{allaire2022quarto,
+  author = {Allaire, J. J. and Teague, Charles and Scheidegger, Carlos and Xie, Yihui and Dervieux, Christophe},
+  title  = {Quarto},
+  year   = {2022},
+  note   = {Version 1.x [Computer software]},
+  doi    = {10.5281/zenodo.5960048}
+}
+
+% ============================================================
+% R PACKAGES LOADED IN THIS REPORT
+% ============================================================
+
+% tidyverse — the umbrella package covering dplyr, ggplot2, readr, tidyr, etc.
+@article{tidyverse2019,
+  author  = {Wickham, Hadley and Averick, Mara and Bryan, Jennifer and Chang, Winston and McGowan, Lucy D'Agostino and François, Romain and Grolemund, Garrett and Hayes, Alex and Henry, Lionel and Hester, Jim and Kuhn, Max and Pedersen, Thomas Lin and Miller, Evan and Bache, Stephan Milton and Müller, Kirill and Ooms, Jeroen and Robinson, David and Seidel, Dawson P. and Spinu, Vitalie and Takahashi, Kohske and Vaughan, Davis and Wilke, Claus and Woo, Kara and Yutani, Hiroaki},
+  title   = {Welcome to the {tidyverse}},
+  journal = {Journal of Open Source Software},
+  year    = {2019},
+  volume  = {4},
+  number  = {43},
+  pages   = {1686},
+  doi     = {10.21105/joss.01686}
+}
+
+% ggplot2 — the canonical book reference for the grammar of graphics implementation in R
+% Key kept as `wickham2016` because the qmd already cites this in the Visualisation section
 @book{wickham2016,
   author    = {Wickham, Hadley},
   title     = {ggplot2: Elegant graphics for data analysis},
   year      = {2016},
   publisher = {Springer},
+  address   = {New York},
   doi       = {10.1007/978-3-319-24277-4}
 }
 
+% scales — for axis formatting and palette helpers
+@manual{scales2023,
+  author = {Wickham, Hadley and Pedersen, Thomas Lin and Seidel, Dana},
+  title  = {scales: Scale functions for visualization},
+  year   = {2023},
+  note   = {R package version 1.3.0},
+  url    = {https://scales.r-lib.org}
+}
+
+% broom — used to convert lm() output into tidy tibbles for the regression tables
+@manual{broom2023,
+  author = {Robinson, David and Hayes, Alex and Couch, Simon},
+  title  = {broom: Convert statistical objects into tidy tibbles},
+  year   = {2023},
+  note   = {R package version 1.0.5},
+  url    = {https://broom.tidymodels.org/}
+}
+
+% knitr — Quarto's R engine
+@book{knitr2015,
+  author    = {Xie, Yihui},
+  title     = {Dynamic documents with {R} and {knitr}},
+  year      = {2015},
+  edition   = {2nd},
+  publisher = {Chapman and Hall/CRC},
+  address   = {Boca Raton, FL},
+  isbn      = {978-1498716963}
+}
+
+% fixest — used for the within-employee fixed-effects robustness check
+@article{fixest2018,
+  author  = {Bergé, Laurent},
+  title   = {Efficient estimation of maximum likelihood models with multiple high-dimensional fixed effects},
+  journal = {CREA Discussion Papers},
+  year    = {2018},
+  number  = {2018-13},
+  url     = {https://github.com/lrberge/fixest/}
+}
+
+% plotly — used for interactive ggplotly() conversions
+@book{plotly2020,
+  author    = {Sievert, Carson},
+  title     = {Interactive web-based data visualization with {R}, plotly, and shiny},
+  year      = {2020},
+  publisher = {Chapman and Hall/CRC},
+  address   = {Boca Raton, FL},
+  isbn      = {978-1138331457},
+  url       = {https://plotly-r.com}
+}
+
+% ============================================================
+% ACADEMIC METHODS — CITED IN THEORY RECAPS
+% ============================================================
+
 @book{tukey1977,
   author    = {Tukey, John W.},
-  title     = {Exploratory Data Analysis},
+  title     = {Exploratory data analysis},
   year      = {1977},
   publisher = {Addison-Wesley},
   address   = {Reading, MA}
@@ -33,62 +147,28 @@
 
 @book{cleveland1985,
   author    = {Cleveland, William S.},
-  title     = {The Elements of Graphing Data},
+  title     = {The elements of graphing data},
   year      = {1985},
   publisher = {Wadsworth},
   address   = {Monterey, CA}
 }
 
 @article{welch1947,
-  author  = {Welch, B. L.},
-  title   = {The generalization of `Student's' problem when several different population variances are involved},
+  author  = {Welch, Bernard L.},
+  title   = {The generalization of `{Student's}' problem when several different population variances are involved},
   journal = {Biometrika},
+  year    = {1947},
   volume  = {34},
   number  = {1-2},
   pages   = {28--35},
-  year    = {1947},
   doi     = {10.1093/biomet/34.1-2.28}
 }
 
 @book{james2013,
   author    = {James, Gareth and Witten, Daniela and Hastie, Trevor and Tibshirani, Robert},
-  title     = {An Introduction to Statistical Learning: with Applications in R},
+  title     = {An introduction to statistical learning: With applications in {R}},
   year      = {2013},
   publisher = {Springer},
-  address   = {New York}
-}
-
-@manual{argentil2025,
-  title  = {Employee performance dataset (2023--2025)},
-  author = {{Argentil Group}},
-  organization = {People \& Culture Function},
-  year   = {2025},
-  note   = {Internal HR records; accessed in capacity as data custodian}
-}
-
-@article{harris2020array,
-  author  = {Harris, Charles R. and Millman, K. Jarrod and van der Walt, Stéfan J. and others},
-  title   = {Array programming with {NumPy}},
-  journal = {Nature},
-  volume  = {585},
-  pages   = {357--362},
-  year    = {2020},
-  doi     = {10.1038/s41586-020-2649-2}
-}
-
-@article{2020SciPy-NMeth,
-  author  = {Virtanen, Pauli and Gommers, Ralf and Oliphant, Travis E. and others},
-  title   = {{SciPy} 1.0: Fundamental Algorithms for Scientific Computing in {Python}},
-  journal = {Nature Methods},
-  year    = {2020},
-  volume  = {17},
-  pages   = {261--272},
-  doi     = {10.1038/s41592-019-9686-0}
-}
-
-@manual{pandas2025,
-  title        = {pandas: powerful Python data analysis toolkit},
-  author       = {{The Pandas Development Team}},
-  year         = {2025},
-  url          = {https://pandas.pydata.org/}
+  address   = {New York},
+  doi       = {10.1007/978-1-4614-7138-7}
 }
