@@ -193,7 +193,7 @@ I am Tolu Bashorun, **Associate Vice President, People & Culture at AG**, with r
 
 **Sampling approach.** A census; every employee with complete records in any of the six periods is included; no random sampling is applied. The file is a population snapshot of the relevant workforce, not a sample from it.
 
-**Sample size.** 31 unique employees, 153 person-period observations. Most employees (19 of 31) appear in all six periods; the remainder are joiners or leavers within the window. Observations per employee range from 1 to 6 with median 6.
+**Sample size.** 31 unique employees, 153 person-period observations. Most employees (19 of 31) appear in all six periods; the remainder are joiners or tranistioned to executive management within the window. Observations per employee range from 1 to 6 with median 6.
 
 **Unit of observation.** Employee-period pair — the design that allows performance to be examined across both employees and time.
 
@@ -277,7 +277,7 @@ plotly::subplot(
 )
 ```
 
-Performance scores are concentrated in a high band — mean ≈ 86.6, SD ≈ 6.3 — consistent with Argentil's strong performance culture but limiting the variability available for statistical inference. Seventeen missing values appear on `prior_performance` and `performance_change`; these correspond to first-observation rows for new joiners still in their probation phase and are therefore retained for descriptive analysis but excluded only where prior performance is required as a predictor.
+Performance scores are concentrated in a high band — mean ≈ 86.6, SD ≈ 6.3 — consistent with Argentil's strong performance culture but limiting the variability available for statistical inference. Fourteen missing values appear on `prior_performance` and `performance_change`; these correspond to first-observation rows for new joiners still in their probation phase and are therefore retained for descriptive analysis but excluded only where prior performance is required as a predictor.
 
 # Exploratory Data Analysis {#sec-eda}
 
@@ -286,7 +286,7 @@ Performance scores are concentrated in a high band — mean ≈ 86.6, SD ≈ 6.3
 ::: theory-recap
 **Theory recap.** EDA, formalised by @tukey1977 and elaborated for business analytics applications by @adi2026, is the systematic look at the data before any model is fitted: distributional shape, outliers, missingness pattern, and bivariate associations. It is the diagnostic stage that protects every subsequent inferential claim.
 
-**Business justification.** Before recommending changes to the training budget, promotion criteria, or developmental programmes at the Group, the analyst has to be sure the data can support those claims. EDA reveals the unbalanced department sizes, the structural missingness for probation-period rows, and the level-band imbalance — facts that change how every later result must be qualified.
+**Business justification.** Before recommending changes to the training budget, promotion criteria, or developmental programmes at the Group, the P&C team has to be sure the data can support those claims. EDA reveals the unbalanced department sizes, the structural missingness for probation-period rows, and the level-band imbalance, facts that change how every later result must be qualified.
 :::
 
 ```{r}
@@ -436,12 +436,12 @@ p_mgr <- ggplot(df, aes(x = factor(manager_id, levels = mgr_order),
 make_interactive(p_mgr, tooltip = "text")
 ```
 
-**Plain-language interpretation.** The data are usable but unbalanced: CS supplies roughly 38% of all observations while Finance and People & Culture each have just 12 rows. Performance scores cluster between 82 and 92 with a small left tail. The six-period trajectory shows the *cohort* average barely moves between 2023 H1 and 2025 H2, but *individual* employees swing by several points between periods. The manager view is the most striking single chart in the report: team means range from \~80 to \~93 — a gap of more than two standard deviations of the outcome variable. Some of this is genuine performance heterogeneity; some is plausibly rater drift. Either way, it warrants a calibration conversation.
+**Plain-language interpretation.** The data are usable but unbalanced: CS supplies roughly 38% of all observations while Finance and People & Culture each have just 12 rows. Performance scores cluster between 82 and 92 with a small left tail. The six-period trajectory shows the *cohort* average barely moves between 2023 H1 and 2025 H2, but *individual* employees swing by several points between periods. The manager view is the most striking single chart in the report: team means range from \~80 to \~93, a gap of more than two standard deviations of the outcome variable. Some of this is genuine performance heterogeneity; some is plausibly rater drift. Either way, it warrants a calibration conversation.
 
 ::: callout-important
 ## Key Finding · Manager-Level Dispersion
 
-Twelve managers' team-mean performance scores span **a 13.7-point range (79.8 to 93.5)** — more than two standard deviations of the outcome variable. This is the single most consequential pattern visible in the EDA: it tells us a meaningful share of what the firm currently records as "individual performance" is actually a function of who is assessing the individual. The formal manager-ANOVA test in the next section confirms this dispersion is statistically real, not sampling noise.
+Twelve managers' team-mean performance scores span **a 13.7-point range (79.8 to 93.5)** more than two standard deviations of the outcome variable. This is the single most consequential pattern visible in the EDA: it tells us a meaningful share of what the firm currently records as "individual performance" is actually a function of who is assessing the individual. The formal manager-ANOVA test in the next section confirms this dispersion is statistically real, not sampling noise.
 :::
 
 # Visualisation of Bivariate Patterns {#sec-viz}
@@ -451,7 +451,7 @@ Twelve managers' team-mean performance scores span **a 13.7-point range (79.8 to
 ::: theory-recap
 **Theory recap.** Visualisation translates statistical relationships into shapes a non-statistician can read in seconds [@cleveland1985; @wickham2016]. Scatter plots, boxplots, and heat maps each have a job: scatter for continuous-by-continuous patterns, boxplots for continuous-by-categorical comparisons, and heat maps for the multivariable correlation structure.
 
-**Business justification.** When the Human Performance Committee sees a heat map showing prior performance and tenure as the warm cells while training intensity is near zero, the takeaway is immediate. The same finding in a coefficient table would not survive the first board slide.
+**Business justification.** When the Human Performance Committee sees a heat map showing prior performance and tenure as the warm cells while training intensity is near zero, the takeaway is immediate. The same finding in a coefficient table would not survive the first slide of the deck to the board.
 :::
 
 ```{r}
@@ -540,12 +540,12 @@ plotly::subplot(
 )
 ```
 
-**Plain-language interpretation.** The heat map confirms two intuitions and refutes one. The confirmations: a person's score this period mostly resembles their score last period (r = 0.55), and tenure tracks performance gently upward (r = 0.38). The refutation: training intensity does not move with performance (r ≈ 0.04). The developmental boxplots make the same point: in an organisation that invests deliberately in training, the absence of a visible lift between Level 1 and Level 2 participants is itself a finding that demands attention.
+**Plain-language interpretation.** The heat map confirms two intuitions and refutes one. The confirmations: an employee's score this period mostly resembles their score last period (r = 0.55), and tenure tracks performance gently upward (r = 0.38). The refutation: training intensity does not move with performance (r ≈ 0.04). The developmental boxplots make the same point: in an organisation that invests deliberately in training, the absence of a visible lift between Level 1 and Level 2 participants is itself a finding that demands attention.
 
 ::: callout-warning
 ## Watch-Out · The Developmental Levers Are Flat
 
-Both training participation intensity (r ≈ +0.04) and within-period promotion status (r ≈ –0.13) show essentially zero or negative association with performance. This does *not* mean these investments are wasted — but it does mean the case for continuing them at current intensity cannot be defended from these data alone. A more granular L&D dataset or a longer time-lag analysis is needed before drawing firmer conclusions.
+Both training participation intensity (r ≈ +0.04) and within-period promotion status (r ≈ –0.13) show essentially zero or negative association with performance. This does *not* mean these investments are wasted but it means the case for continuing them at current intensity cannot be defended from these data alone. More specific L&D data or a longer time-lag analysis is needed to draw true and representative conclusions.
 :::
 
 # Hypothesis Testing {#sec-hyp}
@@ -555,7 +555,7 @@ Both training participation intensity (r ≈ +0.04) and within-period promotion 
 ::: theory-recap
 **Theory recap.** A formal hypothesis test pits a null (no effect) against an alternative and asks whether the observed pattern is unlikely under the null [@welch1947]. We use Welch's two-sample *t*-test where variances may differ and one-way ANOVA for three-or-more-group comparisons. With n = 153 and a near-normal performance distribution, parametric tests are appropriate.
 
-**Business justification.** HR teams routinely make claims of the form *"high-training employees outperform"* or *"the IB department is our top team"*. Hypothesis testing is the discipline that separates a real signal from sampling noise — the difference between a defensible recommendation to the Human Performance Committee and a narrative built on hope.
+**Business justification.** As HR professionals, we may make certain claims such as *"high-training employees outperform"* or *"the IB department is our top performing team"*. Hypothesis testing is the discipline that separates a real signal from sampling noise, the difference between a defensible recommendation to the Human Performance Committee and a narrative built on hope.
 :::
 
 Six pre-specified hypotheses are tested. The first five address the analytical question directly; **H6** is added in support of the manager-level upgrade.
@@ -623,14 +623,14 @@ tibble(
 
 **Plain-language interpretation.** Four of the six tests reject the null at p \< 0.05.
 
-**H5 (prior performance)** is by far the strongest result — a person's score this period closely tracks their score last period. **H4 (tenure)** confirms the gentle upward tenure effect. **H3 (department)** is highly significant: the F-statistic of 8.16 is driven by Finance trailing CS, IB, and People & Culture by 7–9 points on average. **H6 (manager)** is the new upgrade finding — between-manager variation is real, not noise, and substantial.
+**H5 (prior performance)** is by far the strongest result; an employee's score this period closely tracks their score last period. **H4 (tenure)** confirms the gentle upward tenure effect. **H3 (department)** is highly significant: the F-statistic of 8.16 is driven by Finance trailing CS, IB, and People & Culture by 7–9 points on average. **H6 (manager)** is the new upgrade finding; between-manager variation is real, not noise, and substantial.
 
-**H1 (promotion)** rejects the null but in the *wrong direction* for an "incentive" narrative: promoted employees in this sample score 2.5 points *lower* than non-promoted employees (t = –2.35, p = 0.025). The most defensible interpretation is a learning-curve effect — newly promoted staff are being assessed in unfamiliar roles. **H2 (training intensity)** does not reject the null at all (t = 0.50, p = 0.62); the high- and low-training groups are statistically indistinguishable on the performance score.
+**H1 (promotion)** rejects the null but in the *wrong direction* for an "incentive" narrative: promoted employees in this sample score 2.5 points *lower* than non-promoted employees (t = –2.35, p = 0.025). The most defensible interpretation is a learning-curve effect i.e., newly promoted staff are being assessed in unfamiliar, higher demand roles. **H2 (training intensity)** does not reject the null at all (t = 0.50, p = 0.62); the high- and low-training groups are statistically indistinguishable on the performance score.
 
 ::: callout-note
 ## Interpreting the Promotion Finding
 
-The H1 result is statistically significant but in the unexpected direction. Rather than treating this as evidence that promotion *hurts* performance, the more sober reading is that **newly promoted employees are being assessed against a higher bar than they had in their previous role**. The fixed-effects robustness check in the regression section is consistent with this learning-curve interpretation — promotion shows no significant within-employee effect, suggesting the lower scores reflect the new role's demands rather than a decline in the person.
+The H1 result is statistically significant but in the unexpected direction. Rather than treating this as evidence that promotion *hurts* performance, the more sober reading is that **newly promoted employees are being assessed against a higher bar than they had in their previous role**. The fixed-effects robustness check in the regression section is consistent with this learning-curve interpretation; promotion shows no significant within-employee effect, suggesting the lower scores reflect the new role's demands rather than a decline in the person.
 :::
 
 # Correlation Analysis {#sec-corr}
@@ -638,9 +638,9 @@ The H1 result is statistically significant but in the unexpected direction. Rath
 > *Technique 4 of 5 · Triaging the candidate drivers*
 
 ::: theory-recap
-**Theory recap.** The Pearson correlation coefficient *r* measures the strength and direction of a linear relationship between two continuous variables, ranging from –1 to +1, with the associated *p*-value testing whether the population *r* differs from zero. Correlation is necessary but not sufficient for causation — it answers "do these move together?" not "does one drive the other?"
+**Theory recap.** The Pearson correlation coefficient *r* measures the strength and direction of a linear relationship between two continuous variables, ranging from –1 to +1, with the associated *p*-value testing whether the population *r* differs from zero. Correlation is necessary but not sufficient for causation. It answers "do these move together?" not "does one drive the other?"
 
-**Business justification.** Correlation is the standard first cut in any scoping exercise — used as a triage tool, it tells the analyst which variables are worth promoting into the regression model and which can be dropped. For development and succession planning at Argentil, knowing which factors actually move alongside performance prevents resources from being spent on interventions that are not connected to outcomes.
+**Business justification.** Correlation is the standard first cut in any scoping exercise, used as a triage tool, it tells the analyst which variables are worth promoting into the regression model and which can be dropped. For development and succession planning at AG, knowing which factors actually move alongside performance prevents resources from being spent on interventions that are not connected to outcomes.
 :::
 
 ```{r}
@@ -725,7 +725,7 @@ plotly::subplot(
 ::: callout-tip
 ## Business Implication · Where the Signal Actually Lives
 
-The variables Argentil tracks most carefully — training programmes attended and promotion events — show effectively zero bivariate signal with the performance outcome. Meanwhile the **quieter, less-tracked variables** — tenure and prior performance — carry the bulk of the explained variance. This argues for two practical shifts: (1) capture more granular L&D data so any training effect that exists has a chance of being detected, and (2) treat prior performance as a leading indicator for early-warning conversations rather than a backward-looking record.
+The variables you would assume are most important i.e., training programmes attended and promotion events show effectively zero bivariate signal with the performance outcome. Meanwhile the **quieter, variables**; tenure and prior performance carry the bulk of the explained variance. This argues for two practical shifts: (1) capture more granular L&D data so any training effect that exists has a chance of being detected, and (2) treat prior performance as a leading indicator for early-warning conversations rather than a backward-looking record.
 :::
 
 # Regression Analysis {#sec-reg}
@@ -735,7 +735,7 @@ The variables Argentil tracks most carefully — training programmes attended an
 ::: theory-recap
 **Theory recap.** Multiple linear regression models the conditional mean of an outcome as a linear function of several predictors, allowing each coefficient to be interpreted as the predicted change in the outcome per one-unit change in that predictor *holding all others fixed* [@james2013; @adi2026]. Statistical inference rests on the Gauss–Markov assumptions: linearity, independent errors, homoscedasticity, and approximately normal residuals.
 
-**Business justification.** Bivariate correlation cannot answer the question that strategic people decisions hinge on: *"after controlling for the things I cannot change quickly — tenure, department, prior score — does training intensity buy me extra performance?"* That is a partial-effect question, and regression is the tool that delivers it.
+**Business justification.** Bivariate correlation cannot answer the question that strategic people decisions hinge on: *"after controlling for the things I cannot change quickly; tenure, department, prior score, does training intensity yield better performance?"* That is a partial-effect question, and regression is the tool that delivers it.
 :::
 
 ## Full model
@@ -898,12 +898,12 @@ p_forest <- ggplot(coef_df,
 make_interactive(p_forest, tooltip = "text")
 ```
 
-The reduced model has a *higher* adjusted R² (0.347 vs 0.334) than the full model — fewer predictors, more signal per parameter. Each additional year of **tenure** adds roughly **0.32 points** of performance (p = 0.045), each prior-performance point translates into **0.43 points** of current performance (p \< 0.001), and Finance employees score \~3.6 points lower than CS employees on average (p ≈ 0.06).
+The reduced model has a *higher* adjusted R² (0.347 vs 0.334) than the full model due to fewer predictors, more signal per parameter. Each additional year of **tenure** adds roughly **0.32 points** of performance (p = 0.045), each prior-performance point translates into **0.43 points** of current performance (p \< 0.001), and Finance employees score \~3.6 points lower than CS employees on average (p ≈ 0.06).
 
 ::: callout-important
 ## Key Finding · The Two-Variable Performance Equation
 
-After thinning the model from 16 predictors to 6, only **prior performance** and **tenure** survive as statistically reliable independent drivers of the current performance score. The implication is operationally clean: the variables Argentil should track most carefully are not the developmental events (training, promotion) but the **stable individual signals** (where someone scored last cycle, how long they have been in the firm).
+After thinning the model from 16 predictors to 6, only **prior performance** and **tenure** survive as statistically reliable independent drivers of the current performance score. The implication is operationally clean: the variables AG should track most carefully are not the developmental events (training, promotion) but the **stable individual signals** (where someone scored last cycle, how long they have been in the firm).
 :::
 
 ## Robustness check — employee fixed effects
@@ -943,12 +943,12 @@ cat(sprintf("Number of employee fixed effects: %d\n",
             length(unique(reg_df$employee_id))))
 ```
 
-**Plain-language interpretation of the FE check.** The fixed-effects specification finds none of the predictors significant within-employee. Within R² collapses to \~0.02. This is informative, not a failure: it tells us that the **tenure** and **prior-performance** effects identified by OLS are largely *between-employee* phenomena — high-tenure employees tend to be high-performance employees, but individual employees do not measurably gain performance points as their own tenure ticks up. The reverse is also useful: training and promotion show no significant within-employee effect either, reinforcing that these levers are not visibly working on the performance score at the individual level during the study window.
+**Plain-language interpretation of the FE check.** The fixed-effects specification finds none of the predictors significant within-employee. Within R² collapses to \~0.02. This is informative, not a failure: it tells us that the **tenure** and **prior-performance** effects identified by OLS are largely *between-employee* phenomena. High-tenure employees tend to be high-performance employees, but individual employees do not measurably gain performance points as their own tenure ticks up. The reverse is also useful: training and promotion show no significant within-employee effect either, reinforcing that these levers are not visibly working on the performance score at the individual level during the study window.
 
 ::: callout-note
 ## Why the Fixed-Effects Result Strengthens Rather than Weakens the Story
 
-A reader unfamiliar with panel methods might see the FE model's near-zero R² as evidence that "nothing works". The opposite is true. The FE transformation removes everything stable about each person — innate ability, manager, role, tenure level — and asks whether the *remaining* within-person changes still predict performance. They don't, which means the substantial OLS effects we estimated reflect **stable differences between people** rather than spurious time trends. AG's data tells a between-employee story, and the recommendations should match that.
+A reader unfamiliar with panel methods might see the FE model's near-zero R² as evidence that "nothing works". The opposite is true. The FE transformation removes everything stable about each person i.e., innate ability, manager, role, tenure level and asks whether the *remaining* within-person changes still predict performance. They don't, which means the substantial OLS effects we estimated reflect **stable differences between people** rather than spurious time trends. AG's data tells a between-employee story, and the recommendations should match that.
 :::
 
 ## Diagnostics
@@ -992,20 +992,20 @@ plotly::subplot(
 )
 ```
 
-The residuals vs fitted plot shows no obvious heteroscedasticity, supporting the linearity and constant-variance assumptions. The Q-Q plot tracks the reference line through the middle 90% of the distribution with small departures at the extremes — the same outliers visible in the original score distribution. With n = 139, the central limit theorem makes the inferential statements robust to this mild non-normality.
+The residuals vs fitted plot shows no obvious heteroscedasticity, supporting the linearity and constant-variance assumptions. The Q-Q plot tracks the reference line through the middle 90% of the distribution with small departures at the extremes, the same outliers visible in the original score distribution. With n = 139, the central limit theorem makes the inferential statements robust to this mild non-normality.
 
-**Plain-language interpretation.** In business terms: hold two employees side by side, in the same department, with the same prior-period score. The one with five extra years of tenure is predicted to score about **1.6 points higher** today (5 × 0.32). Hold tenure constant: each prior-period point flows through to roughly **0.43 of a point** in the current period. The model explains 37% of the variance in performance — a meaningful but not overwhelming amount, which is appropriate given that performance scores at AG are tightly clustered and shaped by factors (managerial judgement, project context) that are not captured in any structured variable.
+**Plain-language interpretation.** In business terms: hold two employees side by side, in the same department, with the same prior-period score. The one with five extra years of tenure is predicted to score about **1.6 points higher** today (5 × 0.32). Hold tenure constant: each prior-period point flows through to roughly **0.43 of a point** in the current period. The model explains 37% of the variance in performance, a meaningful but not overwhelming amount, which is appropriate given that performance scores at AG are tightly clustered and shaped by factors (managerial judgement, project context) that are not captured in any structured variable.
 
 # Integrated Findings & Recommendation
 
 The five techniques plus the two upgrade analyses tell a single, coherent story about performance at AG.
 
-**EDA** revealed a panel that is larger and more time-rich than expected (31 employees, 153 person-period rows, six review periods), with structural missingness only on probation rows and the workforce spread across five departments. **Visualisation** flagged that within-person variation across periods is comparable to between-person variation, that Finance trails the other departments markedly, that the developmental factors look flat, and — the upgrade finding — that **manager-level dispersion is striking**, with twelve managers' team means ranging from 79.8 to 93.5. **Correlation analysis** identified prior performance (r = 0.55) and tenure (r = 0.38) as the most strongly associated continuous predictors, while training intensity (r = 0.04) and promotion (r = –0.13) were negligible or negative. **Hypothesis testing** rejected the null for department differences (F = 8.16, p \< 0.001), manager differences (F = 4.94, p \< 0.001), tenure (p \< 0.001), prior performance (p \< 0.001), and — in the *wrong* direction for the policy narrative — promotion (t = –2.35, p = 0.025). **Regression analysis** confirmed tenure and prior performance as the surviving independent predictors with the Finance gap marginal. The **fixed-effects robustness check** confirmed that these effects operate largely between employees, not within.
+**EDA** revealed a panel that is larger and more time-rich than expected (31 employees, 153 person-period rows, six review periods), with structural missingness only on probation rows and the workforce spread across five departments. **Visualisation** flagged that within-person variation across periods is comparable to between-person variation, that Finance trails the other departments markedly, that the developmental factors look flat, and the upgrade finding that **manager-level dispersion is striking**, with twelve managers' team means ranging from 79.8 to 93.5. **Correlation analysis** identified prior performance (r = 0.55) and tenure (r = 0.38) as the most strongly associated continuous predictors, while training intensity (r = 0.04) and promotion (r = –0.13) were negligible or negative. **Hypothesis testing** rejected the null for department differences (F = 8.16, p \< 0.001), manager differences (F = 4.94, p \< 0.001), tenure (p \< 0.001), prior performance (p \< 0.001), and — in the *wrong* direction for the policy narrative — promotion (t = –2.35, p = 0.025). **Regression analysis** confirmed tenure and prior performance as the surviving independent predictors with the Finance gap marginal. The **fixed-effects robustness check** confirmed that these effects operate largely between employees, not within.
 
 **Integrated answer to the research question.** Five driver categories emerge from the evidence:
 
 | Driver category | Key drivers | Direction & strength |
-|------------------------|-------------------|------------------------------|
+|------------------------|-------------------|-----------------------------|
 | **Individual** | Prior performance, tenure | Strong positive; substantial within-employee persistence |
 | **Organisational (Dept)** | Department | Significant; Finance trails by \~7–9 points unadjusted, \~3.6 adjusted |
 | **Organisational (Manager)** | Manager (rater) | Between-team dispersion is real (ANOVA p \< 0.001) — calibration risk |
@@ -1017,7 +1017,7 @@ The five techniques plus the two upgrade analyses tell a single, coherent story 
 ::: callout-tip
 ## Strategic Recommendations · Three Evidence-Aligned Investments
 
-1.  **Prioritise continuity, especially early-tenure support.** Tenure's measurable effect (β = +0.32 points per year, p = 0.045) makes structured onboarding, mentoring, and role clarity in years one to three the highest-evidence-base investment. Retention compounds; volatility erodes the persistence advantage the data shows.
+1.  **Prioritise continuity, especially early-tenure support.** Tenure's measurable effect (β = +0.32 points per year, p = 0.045) makes structured onboarding, mentoring, and role clarity in years 1 to 3 the highest-evidence-base investment. Retention compounds; volatility erodes the persistence advantage the data shows.
 2.  **Investigate the Finance gap and the manager-level dispersion together.** Finance is small (n = 12) but the gap is large and replicated across multiple periods. The manager-level ANOVA (F = 4.94, p \< 0.001) suggests at least part of the cross-department story may be a rater-calibration issue rather than a true skill gap. A targeted calibration session with line managers may help improve consistency and alignment in ratings within and across departments.
 3.  **Re-examine the developmental levers before defending them or cutting them.** Training intensity shows no measurable effect on performance, and within-period promotion shows a negative short-run effect (the learning-curve interpretation). Three remedies are possible: (a) the training-intensity proxy is too coarse and a richer L&D dataset would reveal the effect; (b) the time-lag is longer than 18 months and a deferred-outcome study is needed; or (c) the design genuinely needs revision. The next step is a diagnostic with Learning & Development, not a budget decision. This is to further assess the developmental interventions (training and promotion) before adjusting related budgets.
 :::
@@ -1033,12 +1033,12 @@ The dataset is small, observational, and tightly clustered. Five caveats matter 
 
 - **Use of proxy variables.** Several development variables, particularly `training_participation_intensity`, are captured as proxies because more granular records (training hours, programme type, certification outcomes) were not available in structured form during the study window. A more precise assessment of training's impact would require ingestion of detailed L&D records.
 - **Sample size and unbalanced groups.** With 31 unique employees, only 12 observations each in Finance and People & Culture, 19 promotion events and 38 high-training rows, several tests are underpowered. A null result for training is consistent with a real but moderate effect this sample cannot detect.
-- **Limited variability in performance scores.** Argentil's strong performance culture compresses the outcome into a narrow band (mean 86.6, SD 6.3), which reduces statistical power to detect drivers. A broader outcome distribution or a redesigned rating scale would allow deeper differentiation.
+- **Limited variability in performance scores.** AG's high performance culture compresses the outcome into a narrow band (mean 86.6, SD 6.3), which reduces statistical power to detect drivers. A broader outcome distribution or a redesigned rating scale would allow deeper differentiation.
 - **Repeated observations within employees.** Up to six observations per employee violate the OLS independence assumption. The fixed-effects robustness check addresses this through the `feols` within-transformation; the natural full extension is a mixed-effects (random-intercepts) model using `lme4::lmer` that attributes within-employee variation properly.
 - **Rater effects are detected but not modelled.** The manager-level ANOVA establishes that between-manager variation is significant, but the report does not separate "genuine team performance differences" from "rater calibration differences." That separation requires a multi-rater design (the same employee evaluated by multiple managers), which is not available in this dataset.
 :::
 
-**With more data, time, and computing resources**, four extensions would strengthen the analysis: (i) a mixed-effects model with employee and manager random intercepts to separate the two sources of clustering; (ii) a difference-in-differences design comparing high- and low-training employees before and after their training period; (iii) a survival model for promotion timing; and (iv) a longer time window to capture deferred training effects, which typically emerge 12–24 months after participation.
+**With more data, time, and computing resources**, four extensions would strengthen the analysis: (i) a mixed-effects model that separates employee-related and manager-related performance effects; (ii) a difference-in-differences design comparing high- and low-training employees before and after their training period; (iii) analysing the time taken for employees to achieve promotion; and (iv) a longer time window to capture deferred training effects, which typically emerge 12–24 months after participation.
 
 # References {.unnumbered}
 
@@ -1047,7 +1047,7 @@ The dataset is small, observational, and tightly clustered. Five caveats matter 
 
 # Appendix: AI Usage Statement {.unnumbered}
 
-AI tools including Claude and ChatGPT were used to support structuring, drafting, and coding guidance for this submission. The ggplot2/plotly chart styling, the `level_band` re-coding logic, the helper functions for hypothesis-test display, and prose-editing of the executive summary and integrated findings were assisted by AI. All data preparation, variable construction, the choice of which hypotheses to pre-specify, the decision to collapse thirteen job levels into eight bands, the model-reduction rule, the addition of the manager-variance analysis and the fixed-effects robustness check (using `fixest::feols`), the diagnostic interpretation, and every substantive interpretation of the findings including the decision to flag the promotion result as a likely learning-curve effect rather than a counter-incentive finding were independently undertaken and validated using my professional judgement and seven years of institutional knowledge of Argentil's people function. The dataset was sourced from internal HR records [@argentil2025] and assessed accordingly. The full analysis was carried out in R [@rcoreteam2024] within a Quarto document [@allaire2022quarto] using the `tidyverse` [@tidyverse2019], `ggplot2` [@wickham2016], `plotly` [@plotly2020], `scales` [@scales2023], `broom` [@broom2023], `knitr` [@knitr2015], and `fixest` [@fixest2018] packages; all numeric outputs and figures are reproducible from `employee_data.csv` end-to-end.
+AI tools including Claude and ChatGPT were used to support structuring, drafting, debugging errors and coding guidance for this submission. The ggplot2/plotly chart styling, the `level_band` re-coding logic, the helper functions for hypothesis-test display, and prose-editing of the executive summary and integrated findings were assisted by AI. All data preparation, variable construction, the choice of which hypotheses to pre-specify, the decision to collapse thirteen job levels into eight bands, the addition of the manager-variance analysis, the diagnostic interpretation, and every substantive interpretation of the findings including the decision to flag the promotion result as a likely learning-curve effect rather than a counter-incentive finding were independently undertaken and validated using my professional judgement and seven years of institutional knowledge of Argentil's people function. The dataset was sourced from internal HR records [@argentil2025] and assessed accordingly. The full analysis was carried out in R [@rcoreteam2024] within a Quarto document [@allaire2022quarto] using the `tidyverse` [@tidyverse2019], `ggplot2` [@wickham2016], `plotly` [@plotly2020], `scales` [@scales2023], `broom` [@broom2023], `knitr` [@knitr2015], and `fixest` [@fixest2018] packages; all numeric outputs and figures are reproducible from `employee_data.csv` end-to-end.
 
 ```{=html}
 <div class="doc-seal">
